@@ -1,0 +1,26 @@
+import json
+
+
+class Character:
+
+    def __init__(self, character_name: str, info: str, character_id: int = None):
+        self.character_name = character_name
+        self.info = info
+        self.info_from_json = json.loads(info)
+        if character_id:
+            self.character_id = character_id
+        self.active = True
+
+    def get_info(self):
+        return self.info
+
+    def get_name(self):
+        return self.character_name
+
+    def say(self, phrase: str):
+        if self.active:
+            print(self.character_name + ': ' + phrase)
+        else:
+            # здесь надо подумать над тем хотим ли дать персонаджу с которым говорили
+            # уникальную фразу для ответа если с ним попиздели
+            print(self.character_name + ':' + '')
