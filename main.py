@@ -22,3 +22,10 @@ if __name__ == '__main__':
                     character.move('down')
                 if event.key == pygame.K_d:
                     character.move('right')
+
+# получение рейтинг борда
+
+
+def get_rating():
+    with Connection() as conn:
+        results = conn.execute('SELECT * FROM ratings ORDER BY rate_num').fetchall()
