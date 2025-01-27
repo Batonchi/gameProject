@@ -1,5 +1,4 @@
 import pygame
-
 from database import Connection, create_database
 from app.characters.model import Character
 
@@ -9,11 +8,12 @@ if __name__ == '__main__':
     pygame.init()
     running = True
     character = Character()
+    start_game = False
     if running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-            if event.type == pygame.KEYDOWN:
+            if event.type == pygame.KEYDOWN and start_game:
                 if event.key == pygame.K_w:
                     character.move('up')
                 if event.key == pygame.K_a:
