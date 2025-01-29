@@ -1,8 +1,10 @@
 import json
+import pygame
+import os
+import sys
 
 
 class Character:
-
     def __init__(self, character_name: str, info: str, character_id: int = None):
         self.character_name = character_name
         self.info = info
@@ -13,8 +15,19 @@ class Character:
             self.character_id = character_id
         self.active = True
 
-    def load_image(self):
-        pass
+    def load_image(self, name, colorkey=None):
+        fullname = os.path.join('view/images', name)
+        try:
+            image = pygame.image.load(fullname)
+        except pygame.error as message:
+            print(f"Файл с изображением '{fullname}' не найден")
+            raise sys.exit()
+        image = image.convert_alpha()
+        if colorkey is not None:
+            if colorkey is -1:
+                colorkey = image.get_at((0, 0))
+            image.set_colorkey(colorkey)
+        return image
 
     def move(self, word: str):
         match_word = {'left': lambda x: (self.coors[0] - self.speed, self.coors[1]),
