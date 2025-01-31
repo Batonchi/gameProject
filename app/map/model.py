@@ -1,12 +1,14 @@
 import pytmx
 import pygame
+import os
+
 from app.characters.model import Character
-FILE_DIR = 'map'
 
 
 class Map:
     def __init__(self, filename, window_size):
-        self.map = pytmx.load_pygame(f'{FILE_DIR}/{filename}')
+        self.map = pytmx.TiledMap(os.path.join('map', filename))
+
         self.width = self.map.width
         self.height = self.map.height
         self.tile_size = self.map.tilewidth
@@ -23,7 +25,7 @@ class Map:
         for layer in self.map.layers:
             if isinstance(layer, pytmx.TiledTileLayer):
                 for x, y, tile in layer.tiles():
-                    if tile:
+                   if tile:
                         screen.blit(tile, [(x * self.tile_size) - self.CAMERA.x + (self.window_size[0] / 2),
                                            (y * self.tile_size) - self.CAMERA.y + (self.window_size[1] / 2)])
 
@@ -35,4 +37,13 @@ class Map:
                                      object.y - self.CAMERA.y + (self.window_size[1] / 2)])
 
     def update(self):
+        pass
+
+    def checktiles(self, player_rect):
+        check = False
+        if player_rect.collidelistall(self.tiles):
+            check = True
+        return check
+
+    def check_coins(self, player_rect):  # здесь будем проверять ключи и прочие предметы, которые можно будет поднять.
         pass
