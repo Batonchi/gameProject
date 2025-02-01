@@ -21,22 +21,14 @@ class Map:
                                                 self.tile_size, self.tile_size]))
 
     def render(self, screen, player=None):  # <- надо будет поменять
-        try:
-            for layer in self.map.layers:
-                if isinstance(layer, pytmx.TiledTileLayer):
-                    for x, y, tile in layer.tiles():
-                        screen.blit(pygame.image.load(f'app/view/images/{list(tile)[0].split("/")[-1]}'),
-                                    [x * self.tile_size,y * self.tile_size])
-
-                elif isinstance(layer, pytmx.TiledObjectGroup):
-                    for object in layer:
-                        if object.type == 'Player':
-                            screen.blit(player,
-                                        [object.x + (self.window_size[0] / 2),
-                                         object.y + (self.window_size[1] / 2)])
-                pygame.display.update()
-        except Exception as e:
-            print(e)
+        for layer in self.map.layers:
+            if isinstance(layer, pytmx.TiledTileLayer):
+                for x, y, tile in layer.tiles():
+                    screen.blit(pygame.image.load(f'app/view/images/{list(tile)[0].split("/")[-1]}'),
+                                [x * self.tile_size, y * self.tile_size])
+            if isinstance(layer, pytmx.TiledObjectGroup):
+                print('IN')
+        pygame.display.update()
 
     def check_tiles(self, player_rect):
         check = False
