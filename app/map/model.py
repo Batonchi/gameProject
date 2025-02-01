@@ -7,7 +7,7 @@ from app.characters.model import Character
 
 class Map:
     def __init__(self, filename, window_size):
-        self.map = pytmx.TiledMap(os.path.join('app\map', filename))
+        self.map = pytmx.TiledMap(os.path.join('app/map', filename))
         self.width = self.map.width
         self.height = self.map.height
         self.tile_size = self.map.tilewidth
@@ -38,7 +38,7 @@ class Map:
         except Exception as e:
             print(e)
 
-    def checktiles(self, player_rect):
+    def check_tiles(self, player_rect):
         check = False
         if player_rect.collidelistall(self.tiles):
             check = True
