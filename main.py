@@ -30,11 +30,14 @@ create_database()
 if __name__ == '__main__':
     pygame.init()
 
-    size = width, height = 400, 400
+    size = width, height = 200, 200
     screen = pygame.display.set_mode(size)
     running = True
     map_game = Map('map1.tmx', size)
-    # character = Character()
+    fps = 60
+    character = Character()
+    clock = pygame.time.Clock()
+    coors = (100, 100)
     start_scr = True
     while running:
         # if start_scr:
@@ -42,21 +45,26 @@ if __name__ == '__main__':
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-            elif event.type == pygame.KEYDOWN or \
-                    event.type == pygame.MOUSEBUTTONDOWN and start_scr:
-                start_scr = False
-        map_game.render(screen)
-        # if event.type == pygame.KEYDOWN:
-            #     if event.key == pygame.K_w:
-            #         character.move('up')
-            #     if event.key == pygame.K_a:
-            #         character.move('left')
-            #     if event.key == pygame.K_s:
-            #         character.move('down')
-            #     if event.key == pygame.K_d:
-            #         character.move('right')
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_w or (event.type == pygame.KEYDOWN and event.key == pygame.K_w):
+                    coors = character.move('up')
+                    map_game.render(screen, coors)
+                if event.key == pygame.K_a:
+                    coors = character.move('left')
+                    map_game.render(screen, coors)
+                if event.key == pygame.K_s:
+                    coors = character.move('down')
+                    map_game.render(screen, coors)
+                if event.key == pygame.K_d:
+                    coors = character.move('right')
+                    map_game.render(screen, coors)
+            pygame.event.pump()
+        map_game.render(screen, coors)
         pygame.display.flip()
         pygame.display.update()
+        clock.tick(fps)
+
+
 # получение рейтинг борда
 
 

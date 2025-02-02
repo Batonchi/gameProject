@@ -1,8 +1,11 @@
 import pytmx
 import pygame
 import os
+import sys
 
-from app.characters.model import Character
+import app.characters.model
+
+CHARACTER_CLASS = app.characters.model.Character()
 
 
 class Map:
@@ -13,23 +16,44 @@ class Map:
         self.tile_size = self.map.tilewidth
         self.window_size = window_size
         self.collision = self.map.get_layer_by_name('walls')
-        # self.CAMERA = self.map.get_object_by_name("Player")
+        self.CAMERA = self.map.get_object_by_name("Player")
         self.tiles = []
         for x, y, tile in self.collision.tiles():
             if tile:
                  self.tiles.append(pygame.Rect([(x * self.tile_size), (y * self.tile_size),
                                                 self.tile_size, self.tile_size]))
 
-    def render(self, screen, player):  # <- надо будет поменять
+    def load_image_player(self, name, colorkey=None):
+        fullname = os.path.join('app/view/images/', name)
+        try:
+            image = pygame.image.load(fullname)
+        except pygame.error as message:
+            print(f"Файл с изображением '{fullname}' не найден")
+            raise sys.exit()
+        image = image.convert_alpha()
+        if colorkey is not None:
+            if colorkey == -1:
+                colorkey = image.get_at((0, 0))
+            image.set_colorkey(colorkey)
+        return image
+
+    def render(self, screen, coors):  # <- надо будет поменять
         for layer in self.map.layers:
             if isinstance(layer, pytmx.TiledTileLayer):
                 for x, y, tile in layer.tiles():
                     screen.blit(pygame.image.load(f'app/view/images/{list(tile)[0].split("/")[-1]}'),
-                                [x * self.tile_size, y * self.tile_size])
+                                [(x * self.tile_size) - self.CAMERA.x + (self.window_size[0] // 2),
+                                 (y * self.tile_size) - self.CAMERA.y + (self.window_size[1] // 2)])
             if isinstance(layer, pytmx.TiledObjectGroup):
                 for object in layer:
-                    if object.type == 'Player':
-                        screen.blit(player, (object.x, object.y))
+                    if object.name == 'Player':
+                        self.map.get_object_by_name('Player').x = coors[0]
+                        self.map.get_object_by_name('Player').y = coors[1]
+                        screen.blit(self.load_image_player('tile_0010.png'),
+                                    (self.map.get_object_by_name('Player').x
+                                     - self.CAMERA.x + (self.window_size[0] // 2),
+                                     self.map.get_object_by_name('Player').y
+                                     - self.CAMERA.y + (self.window_size[0] // 2)))
         pygame.display.update()
 
     def checktiles(self, player_rect):
@@ -37,6 +61,9 @@ class Map:
         if player_rect.collidelistall(self.tiles):
             check = True
         return check
+
+    def get_map(self):
+        return self.map
 
     def check_coins(self, player_rect):  # здесь будем проверять ключи и прочие предметы, которые можно будет поднять.
         pass
