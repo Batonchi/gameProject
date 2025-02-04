@@ -9,7 +9,7 @@ class Character:
         self.character_name = character_name
         self.info = info
         self.coors = (100, 100)
-        self.speed = 5
+        self.speed = 2
         # self.info_from_json = json.loads(info)
         if character_id:
             self.character_id = character_id

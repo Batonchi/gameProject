@@ -39,6 +39,7 @@ if __name__ == '__main__':
     clock = pygame.time.Clock()
     coors = (100, 100)
     start_scr = True
+    up, left, down, right = False, False, False, False
     while running:
         # if start_scr:
         #     start_screen()
@@ -46,23 +47,41 @@ if __name__ == '__main__':
             if event.type == pygame.QUIT:
                 running = False
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_w or (event.type == pygame.KEYDOWN and event.key == pygame.K_w):
-                    coors = character.move('up')
-                    map_game.render(screen, coors)
+                if event.key == pygame.K_w:
+                    up = True
                 if event.key == pygame.K_a:
-                    coors = character.move('left')
-                    map_game.render(screen, coors)
+                    left = True
                 if event.key == pygame.K_s:
-                    coors = character.move('down')
-                    map_game.render(screen, coors)
+                    down = True
                 if event.key == pygame.K_d:
-                    coors = character.move('right')
-                    map_game.render(screen, coors)
-            pygame.event.pump()
+                    right = True
+            if event.type == pygame.KEYUP:
+                if event.key == pygame.K_w:
+                    up = False
+                if event.key == pygame.K_a:
+                    left = False
+                if event.key == pygame.K_s:
+                    down = False
+                if event.key == pygame.K_d:
+                    right = False
+
+        if up:
+            coors = character.move('up')
+            map_game.render(screen, coors)
+        if left:
+            coors = character.move('left')
+            map_game.render(screen, coors)
+        if right:
+            coors = character.move('right')
+            map_game.render(screen, coors)
+        if down:
+            coors = character.move('down')
+            map_game.render(screen, coors)
+        clock.tick(fps)
         map_game.render(screen, coors)
         pygame.display.flip()
         pygame.display.update()
-        clock.tick(fps)
+
 
 
 # получение рейтинг борда
@@ -71,3 +90,16 @@ if __name__ == '__main__':
 def get_rating():
     with Connection() as conn:
         results = conn.execute('SELECT * FROM ratings ORDER BY rate_num').fetchall()
+
+# if event.key == pygame.K_w:
+#     coors = character.move('up')
+#     map_game.render(screen, coors)
+# elif event.key == pygame.K_a:
+#     coors = character.move('left')
+#     map_game.render(screen, coors)
+# elif event.key == pygame.K_s:
+#     coors = character.move('down')
+#     map_game.render(screen, coors)
+# elif event.key == pygame.K_d:
+#     coors = character.move('right')
+#     map_game.render(screen, coors)
