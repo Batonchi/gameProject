@@ -26,6 +26,8 @@ class Map:
                  self.tiles.append(pygame.Rect([(x * self.tile_size), (y * self.tile_size),
                                                 self.tile_size, self.tile_size]))
 
+        self.doors = pygame.sprite.Group()
+
     def load_image_player(self, name, colorkey=None):
         fullname = os.path.join('app/view/images/', name)
         try:
@@ -45,9 +47,10 @@ class Map:
         for layer in self.map.layers:
             if isinstance(layer, pytmx.TiledTileLayer):
                 for x, y, tile in layer.tiles():
-                    screen.blit(pygame.image.load(f'app/view/images/{list(tile)[0].split("/")[-1]}'),
-                                [(x * self.tile_size) - self.CAMERA.x + (self.window_size[0] // 2),
-                                 (y * self.tile_size) - self.CAMERA.y + (self.window_size[1] // 2)])
+                    if tile is not None:
+                        screen.blit(pygame.image.load(f'app/view/images/{list(tile)[0].split("/")[-1]}'),
+                                    [(x * self.tile_size) - self.CAMERA.x + (self.window_size[0] / 2),
+                                     (y * self.tile_size) - self.CAMERA.y + (self.window_size[1] / 2)])
             if isinstance(layer, pytmx.TiledObjectGroup):
                 for object in layer:
                     if object.name == 'Player':
@@ -63,9 +66,9 @@ class Map:
                             new_x_player, new_y_player
                         screen.blit(self.load_image_player('tile_0010.png'),
                                     (self.map.get_object_by_name('Player').x
-                                     - self.CAMERA.x + (self.window_size[0] // 2),
+                                     - self.CAMERA.x + (self.window_size[0] / 2),
                                      self.map.get_object_by_name('Player').y
-                                     - self.CAMERA.y + (self.window_size[0] // 2)))
+                                     - self.CAMERA.y + (self.window_size[0] / 2)))
         pygame.display.update()
 
     def checktiles(self, player_rect):
