@@ -5,19 +5,18 @@ import sys
 
 
 class Character:
-    def __init__(self, character_name: str, info: str, character_id: int = None):
+    def __init__(self, character_name: str = None, info: str = None, character_id: int = None):
         self.character_name = character_name
         self.info = info
-        self.coors = ()
-        self.speed = 10
-        self.info_from_json = json.loads(info)
+        self.coors = (100, 100)
+        self.speed = 2
+        # self.info_from_json = json.loads(info)
         if character_id:
             self.character_id = character_id
         self.active = True
 
-    @staticmethod
-    def load_image(name, colorkey=None):
-        fullname = os.path.join('view/images', name)
+    def load_image(self, name, colorkey=None):
+        fullname = os.path.join('app/view/images', name)
         try:
             image = pygame.image.load(fullname)
         except pygame.error as message:
@@ -31,12 +30,17 @@ class Character:
         return image
 
     def move(self, word: str):
-        match_word = {'left': lambda x: (self.coors[0] - self.speed, self.coors[1]),
-                      'right': lambda x: (self.coors[0] + self.speed, self.coors[1]),
-                      'dowm': lambda x: (self.coors[0], self.coors[1] - self.speed),
-                      'up': lambda x: (self.coors[0], self.coors[1] + self.speed)
+        match_word = {'left': lambda x=None: (self.coors[0] - self.speed, self.coors[1]),
+                      'right': lambda x=None: (self.coors[0] + self.speed, self.coors[1]),
+                      'down': lambda x=None: (self.coors[0], self.coors[1] + self.speed),
+                      'up': lambda x=None: (self.coors[0], self.coors[1] - self.speed)
                       }
-        self.coors = match_word[word]
+        self.coors = match_word[word]()
+        return self.coors
+
+    def get_coors(self):
+        print(self.coors)
+        return self.coors
 
     def get_info(self):
         return self.info
