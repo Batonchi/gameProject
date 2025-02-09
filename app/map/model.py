@@ -10,14 +10,13 @@ CHARACTER_CLASS = app.characters.model.Character()
 
 class Map:
     def __init__(self, filename, window_size):
-        self.map = pytmx.TiledMap(os.path.join('app\map', filename))
+        self.map = pytmx.TiledMap(os.path.join('app/map/files_tmx', filename))
 
         self.width = self.map.width
         self.height = self.map.height
 
         self.tile_size = self.map.tilewidth
         self.window_size = window_size
-        self.CAMERA = self.map.get_object_by_name("Player")
 
         self.collision = self.map.get_layer_by_name('walls')
         self.tiles = []
@@ -47,10 +46,9 @@ class Map:
         for layer in self.map.layers:
             if isinstance(layer, pytmx.TiledTileLayer):
                 for x, y, tile in layer.tiles():
-                    if tile is not None:
-                        screen.blit(pygame.image.load(f'app/view/images/{list(tile)[0].split("/")[-1]}'),
-                                    [(x * self.tile_size) - self.CAMERA.x + (self.window_size[0] / 2),
-                                     (y * self.tile_size) - self.CAMERA.y + (self.window_size[1] / 2)])
+                    screen.blit(pygame.image.load(f'app/view/images/{list(tile)[0].split("/")[-1]}'),
+                                [(x * self.tile_size),
+                                 (y * self.tile_size)])
             if isinstance(layer, pytmx.TiledObjectGroup):
                 for object in layer:
                     if object.name == 'Player':
@@ -65,10 +63,8 @@ class Map:
                         self.map.get_object_by_name('Player').x, self.map.get_object_by_name('Player').y =\
                             new_x_player, new_y_player
                         screen.blit(self.load_image_player('tile_0010.png'),
-                                    (self.map.get_object_by_name('Player').x
-                                     - self.CAMERA.x + (self.window_size[0] / 2),
-                                     self.map.get_object_by_name('Player').y
-                                     - self.CAMERA.y + (self.window_size[0] / 2)))
+                                    (self.map.get_object_by_name('Player').x,
+                                     self.map.get_object_by_name('Player').y))
         pygame.display.update()
 
     def checktiles(self, player_rect):
