@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.10" tiledversion="1.11.0" orientation="orthogonal" renderorder="right-down" width="100" height="100" tilewidth="8" tileheight="8" infinite="0" nextlayerid="5" nextobjectid="2">
+ <tileset firstgid="1" source="floor1.tsx"/>
+ <tileset firstgid="2" source="floor.tsx"/>
+ <tileset firstgid="20" source="wall.tsx"/>
+ <tileset firstgid="56" source="doors.tsx"/>
+ <tileset firstgid="64" source="top.tsx"/>
+ <layer id="1" name="floor" width="100" height="100">
+  <data encoding="base64" compression="zlib">
+   eJzt20GugjAUQNHqghiy/6X9/MQBwT6tUGihZ3BiNAYL14qAPlJKDwAAAAAAAAAAAAAAAKA780vu/vrx1mMdxbpJ1KakyS/dpoXW2+CuSrtNGa3Hflelc0SL4zuUzg/O69F6HLw30aW+PZ/retRvsWdfq0dfPTimSesxRJ4djOGOtszB+dVjqfV63MGvx+fR9zY9+urhu0ObHlETPdr0cJzZVw9iNd6revTTQo+6PWosR4++6NEfLQAAAMblHHo//H5um6POa+T+a8L2HjV+N1d6XXwKbkeU2+Zb/8Px7fp3rtH/sp/Ba47YZe/8mFP5viJ6zpTexzJii089vrG/1uPKos/j9favsc9uva5XcEYPjut2xmuZT3rwucfyFgAAAAAAAAAAgGv6A/61TCE=
+  </data>
+ </layer>
+ <layer id="2" name="walls" width="100" height="100">
+  <data encoding="base64" compression="zlib">
+   eJztnGlr3DAQhgVtWmib3iSQQKDZbppCUsIm0E/5/38rHmLh8aBj5GOt431g8FpSJK3elUaHHWMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgPrYd3ZXsN0s3ySbAj3yguvxsFH5Pzs7E1du5+zzZf93VNfW9fja2ffA/dTyL6OpBqDHwJvOTgL3U8unNn7s7BBJ+9e0qQf97r+Zeb99bR7QY4xLj3edfejstI+/MuNx/dzxmdLwtuF5xMqHHgMuPWgcem9exyLbXk+9/Tbj+c2u/5sLM24bnkesfPiPgZj/kO1Fejwz8+mRwi8z7nN2nmVxzbls35RxobT8PlcdY/5D+/udo8cW5FpXjf8oSY//ynQ51NWF1n+sWb4dY/iYwscrPuYs1Y4l6SHjl+gfvrVjit5PrAzXPg8vPxZfkh5r+A/f2pHnb+dwmjL2ijpJStXD5T9i6wPeVinrSZs/XXeRtK3q4fIfLj3ueyN4W4XWglKrOXrIMcjm/dmMfwuutCXpIeNTx6vQWlBqleI/YmMi5f2pz/9LJK+S9aD1Wmh9RZ+vje47Sq1S9LiNlPGxN9KkFj3mnA1NLd+OhzT2hcasW+OfLxGk9dveZN+U861S9LDciKv0n3uRdop/tfmk6NHq+kPWN6SH6z6l/KX8Rwql6GH3G46tx8HE99tD86vQ+q+m+VWqLpLYWmRq/3CVK9fnofhW9YidS/H1R6yNWtZjqfEqdi41R49W9q8I+PNtyGW+q6FVPUp8ZvGPiY9XJa4Hra3Vbg8Lm9Z/5Nr+El//oD0r37Ob8hxPpvGFXa9Y99r14PWn8f2CXY0yTiLjXWeGmrB/jrrXrgf3sWvp4Toz1IbJureiB7XhQZgmzkVMr1TkWYDUw/fsZM5o+sezMKOMk/j0cO2paMJKexZJg0aPpbB6SH9Aeyo/zPgMSRMGPeZh9XC9tyD3VDRhrelBV/IJ98IorJTvR9SiRy3Uogf6x/HJwZ9jfjWwhh6+7+/z55hfDWyhhwTzq4Ec9JgK3/eU7yzwPU/ts3o5sKUeU/cTLSnnNNDDHc6Zu59I8DOQUto8xBrz3WONV0QrevB909j/FPG9my7Dr1aofwt6rA2dJ9F707zv0efdhHDokRfQIy9q16NEq1WP0q0GPQAAAAAAAAAAAAAAAAAAAAAA+fICBlO7xw==
+  </data>
+ </layer>
+ <layer id="4" name="close_doors" width="100" height="100">
+  <data encoding="base64" compression="zlib">
+   eJzt1NEJACAIBcDWqo/af6uaIYok78A/EfGBpQAAAAAAAAAAAAAAAAAAAD9qq+rrJRIal3rZI487Tt/KvwIAAAAAAAAAACCiHnxeNvKIRR4AAAAAAAAAAAAAAEAGExeDA5Y=
+  </data>
+ </layer>
+</map>

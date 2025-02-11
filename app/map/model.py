@@ -1,78 +1,74 @@
-import pytmx
+import pytmx.util_pygame
 import pygame
 import os
-import sys
-
 import app.characters.model
 
-CHARACTER_CLASS = app.characters.model.Character()
+
+# CHARACTER_CLASS = app.characters.model.Character()
 
 
 class Map:
-    def __init__(self, filename, window_size):
-        self.map = pytmx.TiledMap(os.path.join('app\map', filename))
-
-        self.width = self.map.width
+    def __init__(self, filename: str):
+        self.map = pytmx.TiledMap(os.path.abspath('app/map/' + filename))
+        self.top = 0
+        self.left = 0
         self.height = self.map.height
+        self.width = self.map.width
+        self.tile_width = self.map.tilewidth
+        self.walls = self.map.get_layer_by_name('walls')
+        self.doors = self.map.get_layer_by_name('close_doors')
+        self.floor = self.map.get_layer_by_name('floor')
+        self.walls = [pygame.Rect([(x * self.tile_width), (y * self.tile_width),
+                                   self.tile_width, self.tile_width]) for x, y, tile in self.walls.tiles()
+                      if tile]
+        self.floor = [pygame.Rect([(x * self.tile_width), (y * self.tile_width),
+                                   self.tile_width, self.tile_width]) for x, y, tile in self.floor.tiles()
+                      if tile]
+        self.doors = [pygame.Rect([(x * self.tile_width), (y * self.tile_width),
+                                   self.tile_width, self.tile_width]) for x, y, tile in self.doors.tiles()
+                      if tile]
 
-        self.tile_size = self.map.tilewidth
-        self.window_size = window_size
-        self.CAMERA = self.map.get_object_by_name("Player")
+    def render(self, screen, x_i: int, y_i: int, width: int, height: int):
+        for y in range(y_i, height):
+            for x in range(x_i, width):
+                walls = self.map.get_tile_image(x, y, 1)
+                floor = self.map.get_tile_image(x, y, 0)
+                doors = self.map.get_tile_image(x, y, 2)
+                if walls is None:
+                    if not (doors is None):
+                        screen.blit(pygame.image.load(doors[0]), (x * self.tile_width, y * self.tile_width))
+                    else:
+                        if floor is None:
+                            continue
+                        screen.blit(pygame.image.load(floor[0]), (x * self.tile_width, y * self.tile_width))
+                else:
+                    screen.blit(pygame.image.load(walls[0]), (x * self.tile_width, y * self.tile_width))
 
-        self.collision = self.map.get_layer_by_name('walls')
-        self.tiles = []
-        for x, y, tile in self.collision.tiles():
-            if tile:
-                 self.tiles.append(pygame.Rect([(x * self.tile_size), (y * self.tile_size),
-                                                self.tile_size, self.tile_size]))
+    # def check_coord(self, coors):
+    #     if (self.top > coors[1] or self.top + (len(self.board) * self.tile_width) < coors[1] or self.left > coors[0]
+    #             or self.left + (len(self.board[0]) * self.tile_width) < coors[0]):
+    #         return None
+    #     for y in range(0, len(self.board)):
+    #         for x in range(0, len(self.board[0])):
+    #             if (self.top + y * self.tile_width <= coors[1] <= self.top + y * self.tile_width + self.tile_width and
+    #                     self.left + x * self.tile_width <= coors[0] <= self.left + x * self.tile_width + self.tile_width):
+    #                 return x, y
+    #     pygame.display.update()
 
-    def load_image_player(self, name, colorkey=None):
-        fullname = os.path.join('app/view/images/', name)
-        try:
-            image = pygame.image.load(fullname)
-        except pygame.error as message:
-            print(f"Файл с изображением '{fullname}' не найден")
-            raise sys.exit()
-        image = image.convert_alpha()
-        if colorkey is not None:
-            if colorkey == -1:
-                colorkey = image.get_at((0, 0))
-            image.set_colorkey(colorkey)
-        return image
+    def get_tile_id(self, position):
+        return self.map.tiledgidmap[self.map.get_tile_gid(*position, 0)]
 
-    def render(self, screen, coors):
-        player_coors = coors
-        for layer in self.map.layers:
-            if isinstance(layer, pytmx.TiledTileLayer):
-                for x, y, tile in layer.tiles():
-                    screen.blit(pygame.image.load(f'app/view/images/{list(tile)[0].split("/")[-1]}'),
-                                [(x * self.tile_size) - self.CAMERA.x + (self.window_size[0] // 2),
-                                 (y * self.tile_size) - self.CAMERA.y + (self.window_size[1] // 2)])
-            if isinstance(layer, pytmx.TiledObjectGroup):
-                for object in layer:
-                    if object.name == 'Player':
-                        x_player, y_player = self.map.get_object_by_name('Player').x, self.map.get_object_by_name(
-                            'Player').y
-                        new_x_player, new_y_player = player_coors[0], player_coors[1]
-                        player_rect = pygame.Rect(new_x_player, new_y_player,
-                                                  self.map.get_object_by_name('Player').width,
-                                                  self.map.get_object_by_name('Player').height)
-                        if self.checktiles(player_rect):
-                            new_x_player, new_y_player = x_player, y_player
-                        self.map.get_object_by_name('Player').x, self.map.get_object_by_name('Player').y =\
-                            new_x_player, new_y_player
-                        screen.blit(self.load_image_player('tile_0010.png'),
-                                    (self.map.get_object_by_name('Player').x
-                                     - self.CAMERA.x + (self.window_size[0] // 2),
-                                     self.map.get_object_by_name('Player').y
-                                     - self.CAMERA.y + (self.window_size[0] // 2)))
-        pygame.display.update()
-
-    def checktiles(self, player_rect):
+    def check_tiles(self, player_rect):
         check = False
-        if player_rect.collidelistall(self.tiles):
+        if not player_rect.collidelistall(self.walls):
             check = True
         return check
 
     def check_coins(self, player_rect):  # здесь будем проверять ключи и прочие предметы, которые можно будет поднять.
         pass
+
+
+class Camera:
+    pass
+
+
