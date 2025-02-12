@@ -74,9 +74,9 @@ class Game:
         pass
 
 
-class Menu:
+class Menu(Game):
     def __init__(self):
-        pass
+        super().__init__()
 
     def start_game(self):
         return False
