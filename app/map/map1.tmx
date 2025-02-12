@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.10" tiledversion="1.11.1" orientation="orthogonal" renderorder="right-down" width="40" height="30" tilewidth="8" tileheight="8" infinite="0" nextlayerid="11" nextobjectid="3">
+ <tileset firstgid="1" source="floor1.tsx"/>
+ <tileset firstgid="2" source="wall.tsx"/>
+ <tileset firstgid="38" source="doors.tsx"/>
+ <tileset firstgid="46" source="top.tsx"/>
+ <layer id="1" name="floor" width="40" height="30">
+  <data encoding="base64" compression="zlib">
+   eJztw0ENAAAMA6Grf9OzsQckrJqqqqqqPn0QtASx
+  </data>
+ </layer>
+ <layer id="2" name="walls" width="40" height="30">
+  <data encoding="base64" compression="zlib">
+   eJztV9EKwjAM7F7noyCr7P+/UwcGjyNJkzWKDx4UZ5o217SXdb21di9q27P1Yr9bs2H1eXZvvmq/P785v0t7n4XW9DOC9vU15lv8GEvCtyLuyG+D56X9Hr9MbgW9IG7UD/uiuavWB2pgtq3KfIKzflF49X5zxlVgh6b9PzCqQ5/ELL+z8bL+Z/lFNKvFynAcoaoOZflF7jlH83Se0RlyjADXfqW+0f+RvQLa3kR5sr1SQzyn5Du639Y+j8ZjrYz48ppnc5CZbxQL34M72BCa1jz9HeNRM6KrWX7aGK4FzDEbk/dzNexyBjx+GjctZ5k6XvG9kOGn2WW87GmH5xvZJE9cWzF/3Cc5n+XH68Vn/mWM+q342pnT9hfvdLh+fs+gr5YjS6sWR7ZriN6LI76eVj1E6gufJdSolR++T0fyd4afBs2eyV8W1jqqv2cea0gptA==
+  </data>
+ </layer>
+ <layer id="3" name="blocks" width="40" height="30">
+  <data encoding="base64" compression="zlib">
+   eJztwzENAAAIA7D5wL9PnuGBo02aAABnGgAA+GMBh+IANw==
+  </data>
+ </layer>
+ <layer id="10" name="close_doors" width="40" height="30">
+  <data encoding="base64" compression="zlib">
+   eJzt07EJADAIBVG3ScBk//XiBjEQ/Bb3wEYsrtEM6M8f911tdcBF9z785Zb7oewd6i11AIAyM2aoIwAAEDpPwQHY
+  </data>
+ </layer>
+ <objectgroup id="6" name="monsters">
+  <object id="1" name="Player" gid="46" x="101.333" y="104.667" width="8" height="8"/>
+ </objectgroup>
+</map>
