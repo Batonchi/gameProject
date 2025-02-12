@@ -1,75 +1,103 @@
-import pytmx
+from typing import Tuple
+
+import pytmx.util_pygame
 import pygame
 import os
-import sys
-
 import app.characters.model
 
-CHARACTER_CLASS = app.characters.model.Character()
+
+# CHARACTER_CLASS = app.characters.model.Character()
+
+class PlayerCamera:
+
+    def __init__(self, target, view_x_zone: int, view_y_zone: int):
+        self.dx = target.x - view_x_zone * target.tile_size[0]
+        self.dy = target.y - view_y_zone * target.tile_size[1]
+        self.view_size = (view_x_zone * 2 * target.tile_size[0] +
+                          target.rect.width, view_y_zone * 2 * target.tile_size[1] + target.rect.height)
+        self.view_x = view_x_zone
+        self.view_y = view_y_zone
+        self.target = target
+
+    def update(self):
+        self.dx = self.target.x - self.view_x * self.target.tile_size[0]
+        self.dy = self.target.y - self.view_y * self.target.tile_size[1]
 
 
 class Map:
-    def __init__(self, filename, window_size):
-        self.map = pytmx.TiledMap(os.path.join('app/map/files_tmx', filename))
+    def __init__(self, filename: str, tile_width: int = 8, tile_height: int = 8):
+        self.map = pytmx.TiledMap(os.path.abspath('app/map/' + filename))
+        self.top = 0
+        self.left = 0
+        self.tile_width = tile_width
+        self.tile_height = tile_height
+        # self.walls = self.map.get_layer_by_name('walls')
+        # self.doors = self.map.get_layer_by_name('close_doors')
+        # self.floor = self.map.get_layer_by_name('floor')
+        # self.walls = [(pygame.Rect([(x * self.tile_width), (y * self.tile_width),
+        #                            self.tile_width, self.tile_width]), tile) for x, y, tile in self.walls.tiles()
+        #               if tile]
+        # self.floor = [(pygame.Rect([(x * self.tile_width), (y * self.tile_width),
+        #                            self.tile_width, self.tile_width]), tile) for x, y, tile in self.floor.tiles()
+        #               if tile]
+        # self.doors = [(pygame.Rect([(x * self.tile_width), (y * self.tile_width),
+        #                            self.tile_width, self.tile_width]), tile) for x, y, tile in self.doors.tiles()
+        #               if tile]
+        self.width = 100
+        self.height = 100
 
-        self.width = self.map.width
-        self.height = self.map.height
+    def render(self, screen, x_i: int, y_i: int, width: int, height: int):
+        for y in range(y_i, height):
+            for x in range(x_i, width):
+                walls = self.map.get_tile_image(x, y, 1)
+                floor = self.map.get_tile_image(x, y, 0)
+                doors = self.map.get_tile_image(x, y, 2)
+                if walls is None:
+                    if not (doors is None):
+                        image = pygame.image.load(doors[0])
+                        screen.blit(pygame.transform.scale(image, (self.tile_width, self.tile_height)),
+                                    (self.left + (x * self.tile_width), self.top + (y * self.tile_height)))
+                    else:
+                        if floor is None:
+                            continue
+                        image = pygame.image.load(floor[0])
+                        screen.blit(pygame.transform.scale(image, (self.tile_width, self.tile_height)),
+                                    (self.left + (x * self.tile_width), self.top + (y * self.tile_height)))
+                else:
+                    image = pygame.image.load(walls[0])
+                    screen.blit(pygame.transform.scale(image, (self.tile_width, self.tile_height)),
+                                (self.left + (x * self.tile_width), self.top + (y * self.tile_height)))
 
-        self.tile_size = self.map.tilewidth
-        self.window_size = window_size
+    def update(self, screen, camera: PlayerCamera):
+        left_top_point_camera = camera.dx, camera.dy
+        right_bottom_point_camera = camera.dx + camera.view_size[0], camera.dy + camera.view_size[1]
+        xy_tile_start = self.get_cell_coord(left_top_point_camera)
+        if not xy_tile_start:
+            xy_tile_start = (0, 0)
+        if xy_tile_start[0] < 0:
+            xy_tile_start = (0, xy_tile_start[1])
+        if xy_tile_start[1] < 0:
+            xy_tile_start = (xy_tile_start[0], 0)
+        xy_tile_end = self.get_cell_coord(right_bottom_point_camera)
+        if not xy_tile_end:
+            xy_tile_end = (self.width, self.height)
+        if xy_tile_end[0] > self.width:
+            xy_tile_end = (self.width, xy_tile_end[1])
+        if xy_tile_end[1] > self.height:
+            xy_tile_end = (xy_tile_end[0], 0)
+        self.render(screen, xy_tile_start[0], xy_tile_start[1],
+                    xy_tile_end[0] - xy_tile_start[0] + xy_tile_start[0],
+                    xy_tile_end[1] - xy_tile_start[1] + xy_tile_start[1])
 
-        self.collision = self.map.get_layer_by_name('walls')
-        self.tiles = []
-        for x, y, tile in self.collision.tiles():
-            if tile:
-                 self.tiles.append(pygame.Rect([(x * self.tile_size), (y * self.tile_size),
-                                                self.tile_size, self.tile_size]))
+    def get_cell_coord(self, coors: Tuple[int, int]):
+        for x in range(coors[0], coors[0] + self.tile_width):
+            for y in range(coors[1], coors[1] + self.tile_height):
+                if x % self.tile_width == 0 and y % self.tile_height == 0:
+                    return x // self.tile_width - 1, y // self.tile_height - 1
 
-        self.doors = pygame.sprite.Group()
-
-    def load_image_player(self, name, colorkey=None):
-        fullname = os.path.join('app/view/images/', name)
-        try:
-            image = pygame.image.load(fullname)
-        except pygame.error as message:
-            print(f"Файл с изображением '{fullname}' не найден")
-            raise sys.exit()
-        image = image.convert_alpha()
-        if colorkey is not None:
-            if colorkey == -1:
-                colorkey = image.get_at((0, 0))
-            image.set_colorkey(colorkey)
-        return image
-
-    def render(self, screen, coors):
-        player_coors = coors
-        for layer in self.map.layers:
-            if isinstance(layer, pytmx.TiledTileLayer):
-                for x, y, tile in layer.tiles():
-                    screen.blit(pygame.image.load(f'app/view/images/{list(tile)[0].split("/")[-1]}'),
-                                [(x * self.tile_size),
-                                 (y * self.tile_size)])
-            if isinstance(layer, pytmx.TiledObjectGroup):
-                for object in layer:
-                    if object.name == 'Player':
-                        x_player, y_player = self.map.get_object_by_name('Player').x, self.map.get_object_by_name(
-                            'Player').y
-                        new_x_player, new_y_player = player_coors[0], player_coors[1]
-                        player_rect = pygame.Rect(new_x_player, new_y_player,
-                                                  self.map.get_object_by_name('Player').width,
-                                                  self.map.get_object_by_name('Player').height)
-                        if self.checktiles(player_rect):
-                            new_x_player, new_y_player = x_player, y_player
-                        self.map.get_object_by_name('Player').x, self.map.get_object_by_name('Player').y =\
-                            new_x_player, new_y_player
-                        screen.blit(self.load_image_player('tile_0010.png'),
-                                    (self.map.get_object_by_name('Player').x,
-                                     self.map.get_object_by_name('Player').y))
-        pygame.display.update()
-
-    def checktiles(self, player_rect):
+    def check_tiles(self, player_rect):
         check = False
-        if player_rect.collidelistall(self.tiles):
+        if not player_rect.collidelistall(self.walls):
             check = True
         return check
 

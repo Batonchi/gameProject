@@ -1,45 +1,45 @@
+
 import json
 import pygame
 import os
 import sys
 
+from typing import Tuple
 
-class Character:
-    def __init__(self, character_name: str = None, info: str = None, character_id: int = None):
+
+class Character(pygame.sprite.Sprite):
+    def __init__(self, character_name: str, info: json = None, character_id: int = None,
+                 tile_width: int = 8, tile_height: int = 8, speed: Tuple[int, int] = (0, 0)):
+        super().__init__()
+        self.image = pygame.image.load(os.path.join('app/view/images/', character_name + '.png'))
         self.character_name = character_name
         self.info = info
-        self.coors = (100, 100)
-        self.speed = 2
+        self.y = 500
+        self.x = 500
+        self.image = pygame.transform.scale(self.image, (tile_width, tile_height))
+        self.tile_size = tile_width, tile_height
+        self.rect = self.image.get_rect()
+        self.speed = speed
         # self.info_from_json = json.loads(info)
         if character_id:
             self.character_id = character_id
         self.active = True
 
-    def load_image(self, name, colorkey=None):
-        fullname = os.path.join('app/view/images', name)
-        try:
-            image = pygame.image.load(fullname)
-        except pygame.error as message:
-            print(f"Файл с изображением '{fullname}' не найден")
-            raise sys.exit()
-        image = image.convert_alpha()
-        if colorkey is not None:
-            if colorkey == -1:
-                colorkey = image.get_at((0, 0))
-            image.set_colorkey(colorkey)
-        return image
-
     def move(self, word: str):
-        match_word = {'left': lambda x=None: (self.coors[0] - self.speed, self.coors[1]),
-                      'right': lambda x=None: (self.coors[0] + self.speed, self.coors[1]),
-                      'down': lambda x=None: (self.coors[0], self.coors[1] + self.speed),
-                      'up': lambda x=None: (self.coors[0], self.coors[1] - self.speed)
-                      }
-        self.coors = match_word[word]()
-        return self.coors
+        if word == 'up':
+            self.y -= self.speed[1]
+            self.rect.move_ip(0, self.speed[1])
+        elif word == 'down':
+            self.y += self.speed[1]
+            self.rect.move_ip(0, -self.speed[1])
+        elif word == 'left':
+            self.x -= self.speed[0]
+            self.rect.move_ip(0, -self.speed[0])
+        elif word == 'right':
+            self.x += self.speed[0]
+            self.rect.move_ip(0, self.speed[0])
 
     def get_coors(self):
-        print(self.coors)
         return self.coors
 
     def get_info(self):
