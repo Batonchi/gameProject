@@ -50,8 +50,8 @@ class Map:
         for y in range(y_i, height):
             for x in range(x_i, width):
                 walls = self.map.get_tile_image(x, y, 1)
-                floor = self.map.get_tile_image(x, y, 1)
-                doors = self.map.get_tile_image(x, y, 1)
+                floor = self.map.get_tile_image(x, y, 0)
+                doors = self.map.get_tile_image(x, y, 2)
                 if walls is None:
                     if not (doors is None):
                         image = pygame.image.load(doors[0])

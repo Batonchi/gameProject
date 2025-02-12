@@ -29,7 +29,7 @@ class Game:
         # zoom_surf = pygame.transform.scale(zoom_surf, (wnd_w, wnd_h))
         w_w, w_h = self.screen.get_size()
         running = True
-        map_game = Map('map1.tmx', tile_width=w_w // 100, tile_height=w_h // 100)
+        map_game = Map('map_level1.tmx', tile_width=w_w // 100, tile_height=w_h // 100)
         map_game.render(self.screen, 0, 0, 100, 100)
         character = Character('character', tile_width=w_w // 150, tile_height=w_h // 75,
                               speed=((w_w // 200) // 4, (w_h // 200) // 4))
