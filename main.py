@@ -74,9 +74,9 @@ class Game:
         pass
 
 
-class Menu:
+class Menu(Game):
     def __init__(self):
-        pass
+        super().__init__()
 
     def start_game(self):
         return False
@@ -185,3 +185,19 @@ class Menu:
 
 if __name__ == '__main__':
     game = Game()
+
+
+
+
+# if event.key == pygame.K_w:
+#     coors = character.move('up')
+#     map_game.render(screen, coors)
+# elif event.key == pygame.K_a:
+#     coors = character.move('left')
+#     map_game.render(screen, coors)
+# elif event.key == pygame.K_s:
+#     coors = character.move('down')
+#     map_game.render(screen, coors)
+# elif event.key == pygame.K_d:
+#     coors = character.move('right')
+#     map_game.render(screen, coors)
