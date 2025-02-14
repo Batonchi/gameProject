@@ -1,15 +1,14 @@
-
 import json
 import pygame
 import os
 import sys
-
+from app.map.model import Map
 from typing import Tuple
 
 
 class Character(pygame.sprite.Sprite):
     def __init__(self, character_name: str, info: json = None, character_id: int = None,
-                 tile_width: int = 8, tile_height: int = 8, speed: Tuple[int, int] = (0, 0)):
+                 tile_width: int = 8, tile_height: int = 8, speed: Tuple[int, int] = (1, 1)):
         super().__init__()
         self.image = pygame.image.load(os.path.join('app/view/images/', character_name + '.png'))
         self.character_name = character_name
