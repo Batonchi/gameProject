@@ -25,6 +25,8 @@ class PlayerCamera:
 class Map:
     def __init__(self, filename: str, tile_width: int = 8, tile_height: int = 8):
         self.map = pytmx.TiledMap(os.path.abspath('app/map/' + filename))
+        self.width = 100
+        self.height = 100
         self.top = 0
         self.left = 0
         self.tile_width = tile_width
@@ -42,8 +44,6 @@ class Map:
         # self.doors = [(pygame.Rect([(x * self.tile_width), (y * self.tile_width),
         #                            self.tile_width, self.tile_width]), tile) for x, y, tile in self.doors.tiles()
         #               if tile]
-        self.width = 100
-        self.height = 100
 
     def render(self, screen, x_i: int, y_i: int, width: int, height: int):
         for y in range(y_i, height):
@@ -88,13 +88,13 @@ class Map:
                     xy_tile_end[0] - xy_tile_start[0] + xy_tile_start[0],
                     xy_tile_end[1] - xy_tile_start[1] + xy_tile_start[1])
 
-    def get_cell_coord(self, coors: Tuple[int, int]):
+    def get_cell_coord(self, coors: Tuple[int, int]) -> Tuple[int, int]:
         for x in range(coors[0], coors[0] + self.tile_width):
             for y in range(coors[1], coors[1] + self.tile_height):
                 if x % self.tile_width == 0 and y % self.tile_height == 0:
                     return x // self.tile_width - 1, y // self.tile_height - 1
 
-    def check_tiles(self, player_rect):
+    def check_tiles(self, player_rect) -> bool:
         check = False
         if not player_rect.collidelistall(self.walls):
             check = True
