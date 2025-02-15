@@ -31,7 +31,7 @@ class Game:
         filename_map = 'map_level1.tmx'
         map_game = Map(filename_map, tile_width=w_w // 100, tile_height=w_h // 100)
         map_game.render(self.screen, 0, 0, 100, 100)
-        character = Character('character', tile_width=w_w // 150, tile_height=w_h // 75,
+        character = Character('character', tile_width=w_w // 100, tile_height=w_h // 100,
                               speed=(1, 1))
         camera = PlayerCamera(character, 10, 10)
         while running:
@@ -44,7 +44,8 @@ class Game:
                     if event.key == pygame.K_ESCAPE:
                         menu_in_game.game_menu()
             if pygame.key.get_pressed()[pygame.K_w]:
-                character.move('up')
+                if not map_game.check_tiles(character.rect):
+                    character.move('up')
             if pygame.key.get_pressed()[pygame.K_a]:
                 character.move('left')
             if pygame.key.get_pressed()[pygame.K_s]:
