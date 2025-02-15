@@ -26,7 +26,7 @@ def create_database():
         cur.execute('''CREATE TABLE IF NOT EXISTS items (
             item_id INTEGER PRIMARY KEY AUTOINCREMENT,
             item_name TEXT NOT NULL,
-            content TEXT NOT NULL DEFAULT '{}'
+            inf TEXT NOT NULL DEFAULT '{}'
         )''')
         cur.execute('''CREATE TABLE IF NOT EXISTS places (
             place_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -37,7 +37,7 @@ def create_database():
         cur.execute('''CREATE TABLE IF NOT EXISTS characters (
             character_id INTEGER PRIMARY KEY AUTOINCREMENT,
             character_name TEXT NOT NULL,
-            info TEXT NOT NULL DEFAULT '{}',
+            inf TEXT NOT NULL DEFAULT '{}',
             coors TEXT NOT NULL
         )''')
         cur.execute('''CREATE TABLE IF NOT EXISTS texts (
@@ -47,11 +47,16 @@ def create_database():
         cur.execute('''CREATE TABLE IF NOT EXISTS sessions (
             session_id INTEGER PRIMARY KEY AUTOINCREMENT,
             player_id INTEGER NOT NULL REFERENCES players(player_id),
-            place_id INTEGER NOT NULL REFERENCES places(place_id),
+            place_id INTEGER NOT NULL REFERENCES places(place_id) DEFAULT 0,
             inf TEXT NOT NULL DEFAULT '{}'
         )''')
         cur.execute('''CREATE TABLE IF NOT EXISTS rate_boards (
             user_id INTEGER REFERENCES players(player_id),
             rate_num INTEGER NOT NULL
         )''')
+        cur.execute('''CREATE TABLE IF NOT EXISTS levels (
+            level_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            level_map TEXT NOT NULL,
+            places TEXT NOT NULL DEFAULT '{}'
+            )''')
         conn.commit()
