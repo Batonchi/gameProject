@@ -8,6 +8,7 @@ from app.map.model import Map, PlayerCamera
 from pygame_widgets.button import Button
 
 
+pygame.init()
 create_database()
 
 
@@ -15,44 +16,33 @@ FPS = 60
 
 
 class Game:
-
     def __init__(self):
         self.screen = pygame.display.set_mode((0, 0), pygame.RESIZABLE)
         pygame.display.set_caption('Game')
-        # zoom = 2
-        # wnd_w, wnd_h = self.screen.get_size()
-        # zoom_size = (round(wnd_w / zoom), round(wnd_h / zoom))
-        # zoom_area = pygame.Rect(0, 0, *zoom_size)
-        # zoom_area.center = (100, 100)
-        # zoom_surf = pygame.Surface(zoom_area.size)
-        # zoom_surf.blit(self.screen, (0, 0), zoom_area)
-        # zoom_surf = pygame.transform.scale(zoom_surf, (wnd_w, wnd_h))
+
         w_w, w_h = self.screen.get_size()
+
+        menu = Menu(self.screen, w_w, w_h)
+        menu_in_game = Menu_in_Game(self.screen, w_w, w_h)
+        menu.main_menu(self.screen)
+
         running = True
-        map_game = Map('map_level1.tmx', tile_width=w_w // 100, tile_height=w_h // 100)
+
+        filename_map = 'map_level1.tmx'
+        map_game = Map(filename_map, tile_width=w_w // 100, tile_height=w_h // 100)
         map_game.render(self.screen, 0, 0, 100, 100)
         character = Character('character', tile_width=w_w // 150, tile_height=w_h // 75,
-                              speed=((w_w // 200) // 4, (w_h // 200) // 4))
+                              speed=(1, 1))
         camera = PlayerCamera(character, 10, 10)
         while running:
-            # self.screen.blit(zoom_surf, (0, 0))
             events = pygame.event.get()
             clock = pygame.time.Clock()
             for event in events:
                 if event.type == pygame.QUIT:
                     running = False
                 if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_a:
-                        character.move('left')
-                    if event.key == pygame.K_w:
-                        character.move('up')
-                    if event.key == pygame.K_s:
-                        character.move('down')
-                    if event.key == pygame.K_d:
-                        character.move('right')
-                camera.update()
-                map_game.update(self.screen, camera)
-                self.screen.blit(character.image, (character.x, character.y))
+                    if event.key == pygame.K_ESCAPE:
+                        menu_in_game.game_menu()
             if pygame.key.get_pressed()[pygame.K_w]:
                 character.move('up')
             if pygame.key.get_pressed()[pygame.K_a]:
@@ -61,6 +51,10 @@ class Game:
                 character.move('down')
             if pygame.key.get_pressed()[pygame.K_d]:
                 character.move('right')
+            camera.update()
+            map_game.update(self.screen, camera)
+            self.screen.blit(character.image, (character.x, character.y))
+
             camera.update()
             pygame.event.pump()
             pygame.display.flip()
@@ -74,17 +68,16 @@ class Game:
         pass
 
 
-class Menu(Game):
-    def __init__(self):
-        super().__init__()
-
-    def start_game(self):
-        return False
+class Menu:
+    def __init__(self, screen, w, h):
+        self.screen = screen
+        self.w = w
+        self.h = h
 
     def show_about_the_game(self, screen):
         screen.fill((0, 0, 0))
         pygame.display.set_caption('Об игре')
-        button_back = Button(screen, 150, 300, 200, 80, text='Назад',
+        button_back = Button(screen, self.w // 12, self.h - 120, 200, 80, text='Назад',
                              fontSize=30, margin=20,
                              inactiveColour=(250, 250, 250),
                              pressedColour=(0, 255, 0), radius=0,
@@ -97,7 +90,8 @@ class Menu(Game):
                     show_menu = False
                     quit()
                 if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1:
-                    if (150 < e.pos[0] and e.pos[0] < 150 + 200 and 400 < e.pos[1] and e.pos[1] < 400 + 80):
+                    if (self.w // 12 < e.pos[0] and e.pos[0] < self.w // 12
+                            + 200 and self.h - 120 < e.pos[1] and e.pos[1] < self.h - 120 + 80):
                         show_menu = False
             button_back.listen(events)
             button_back.draw()
@@ -107,7 +101,7 @@ class Menu(Game):
     def show_trainig_screen(self, screen):
         screen.fill((0, 0, 0))
         pygame.display.set_caption('Обучение')
-        button_back = Button(screen, 300, 700, 200, 80, text='Назад',
+        button_back = Button(screen, self.w // 12, self.h - 120, 200, 80, text='Назад',
                              fontSize=30, margin=20,
                              inactiveColour=(250, 250, 250),
                              pressedColour=(0, 255, 0), radius=0,
@@ -120,7 +114,8 @@ class Menu(Game):
                     show_menu = False
                     quit()
                 if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1:
-                    if (500 < e.pos[0] and e.pos[0] < 500 + 200 and 400 < e.pos[1] and e.pos[1] < 400 + 80):
+                    if (self.w // 12 < e.pos[0] and e.pos[0] < self.w // 12
+                            + 200 and self.h - 120 < e.pos[1] and e.pos[1] < self.h - 120 + 80):
                         show_menu = False
             button_back.listen(events)
             button_back.draw()
@@ -132,26 +127,28 @@ class Menu(Game):
         show_main_menu = True
         pygame.display.set_caption('Меню')
 
-        button_play = Button(screen, 500, 150, 200, 100, text='Новая игра',
+        button_play = Button(screen, self.w // 1.5, 150, self.w // 5, self.h // 7, text='Новая игра',
                              fontSize=30, margin=20,
                              inactiveColour=(250, 250, 250),
                              pressedColour=(0, 255, 0), radius=0,
                              onClick=None)
-        button_training = Button(screen, 500, 260, 200, 100, text='Обучение',
+        button_training = Button(screen, self.w // 1.5, 260, self.w // 5, self.h // 7, text='Обучение',
                                  fontSize=30, margin=20,
                                  inactiveColour=(250, 250, 250),
                                  pressedColour=(0, 255, 0), radius=0,
                                  onClick=None)
-        button_about_the_game = Button(screen, 500, 370, 200, 100, text='Об игре',
+        button_about_the_game = Button(screen, self.w // 1.5, 370, self.w // 5, self.h // 7, text='Об игре',
                                        fontSize=30, margin=20,
                                        inactiveColour=(250, 250, 250),
                                        pressedColour=(0, 255, 0), radius=0,
                                        onClick=None)
-        button_exit = Button(screen, 500, 480, 200, 100, text='Выход',
+        button_exit = Button(screen, self.w // 1.5, 480, self.w // 5, self.h // 7, text='Выход',
                              fontSize=30, margin=20,
                              inactiveColour=(250, 250, 250),
                              pressedColour=(0, 255, 0), radius=0,
                              onClick=None)
+        bg_menu = pygame.image.load('app/view/images/for_main_menu.jpg')
+        bg_menu = pygame.transform.scale(bg_menu, (self.w, self.h))
         while show_main_menu:
             events = pygame.event.get()
             for e in events:
@@ -159,24 +156,69 @@ class Menu(Game):
                     show_main_menu = False
                     pygame.quit()
                 if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1:
-                    if (500 < e.pos[0] and e.pos[0] < 700 and 150 < e.pos[1] and e.pos[1] < 250):
-                        show_main_menu = self.start_game()
-                        if not show_main_menu:
-                            break
-                    if (500 < e.pos[0] and e.pos[0] < 700 and 260 < e.pos[1] and e.pos[1] < 360):
-                        self.show_trainig_screen(pygame.display.set_mode((800, 800)))
-                    if (500 < e.pos[0] and e.pos[0] < 700 and 370 < e.pos[1] and e.pos[1] < 440):
-                        self.show_about_the_game(pygame.display.set_mode((800, 800)))
-                    if (500 < e.pos[0] and e.pos[0] < 700 and 480 < e.pos[1] and e.pos[1] < 580):
+                    if (self.w // 1.5 < e.pos[0] and e.pos[0] < (self.w // 1.5 + self.w // 5)
+                            and 150 < e.pos[1] and e.pos[1] < 150 + self.h // 7):
+                        show_main_menu = False
+                    if (self.w // 1.5 < e.pos[0] and e.pos[0] < (self.w // 1.5 + self.w // 5)
+                            and 260 < e.pos[1] and e.pos[1] < 260 + self.h // 7):
+                        self.show_trainig_screen(screen)
+                    if (self.w // 1.5 < e.pos[0] and e.pos[0] < (self.w // 1.5 + self.w // 5)
+                            and 370 < e.pos[1] and e.pos[1] < 370 + self.h // 7):
+                        self.show_about_the_game(screen)
+                    if (self.w // 1.5 < e.pos[0] and e.pos[0] < (self.w // 1.5 + self.w // 5)
+                            and 480 < e.pos[1] and e.pos[1] < 460 + self.h // 7):
                         quit()
-            bg_menu = pygame.image.load('app/view/images/for_main_menu.jpg')
-            screen.blit(bg_menu, (-25, -50))
+            screen.blit(bg_menu, (0, 0))
             button_play.listen(events)
             button_play.draw()
             button_training.listen(events)
             button_training.draw()
             button_about_the_game.listen(events)
             button_about_the_game.draw()
+            button_exit.listen(events)
+            button_exit.draw()
+
+            pygame.display.update()
+
+
+class Menu_in_Game:
+    def __init__(self, screen, w, h):
+        self.screen = screen
+        self.w, self.h = w, h
+
+    def game_menu(self):
+        self.screen.fill((0, 0, 0))
+        show_game_menu = True
+        button_play = Button(self.screen, self.w // 1.5, 150, self.w // 5, self.h // 7, text='Продолжить',
+                             fontSize=30, margin=20,
+                             inactiveColour=(250, 250, 250),
+                             pressedColour=(0, 255, 0), radius=0,
+                             onClick=None)
+        button_exit = Button(self.screen, self.w // 1.5, 260, self.w // 5, self.h // 7, text='Выход',
+                                 fontSize=30, margin=20,
+                                 inactiveColour=(250, 250, 250),
+                                 pressedColour=(0, 255, 0), radius=0,
+                                 onClick=None)
+        bg_menu = pygame.image.load('app/view/images/for_main_menu.jpg')
+        bg_menu = pygame.transform.scale(bg_menu, (self.w, self.h))
+        while show_game_menu:
+            events = pygame.event.get()
+            for e in events:
+                if e.type == pygame.QUIT:
+                    show_game_menu = False
+                    pygame.quit()
+                if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1:
+                    if (self.w // 1.5 < e.pos[0] and e.pos[0] < (self.w // 1.5 + self.w // 5)
+                            and 150 < e.pos[1] and e.pos[1] < 150 + self.h // 7):
+                        print('IN')
+                        show_game_menu = False
+                    if (self.w // 1.5 < e.pos[0] and e.pos[0] < (self.w // 1.5 + self.w // 5)
+                            and 260 < e.pos[1] and e.pos[1] < 260 + self.h // 7):
+                        quit()
+
+            self.screen.blit(bg_menu, (0, 0))
+            button_play.listen(events)
+            button_play.draw()
             button_exit.listen(events)
             button_exit.draw()
 

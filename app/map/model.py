@@ -6,8 +6,6 @@ import os
 import app.characters.model
 
 
-# CHARACTER_CLASS = app.characters.model.Character()
-
 class PlayerCamera:
 
     def __init__(self, target, view_x_zone: int, view_y_zone: int):
@@ -31,12 +29,13 @@ class Map:
         self.left = 0
         self.tile_width = tile_width
         self.tile_height = tile_height
-        # self.walls = self.map.get_layer_by_name('walls')
+        self.walls_layer = self.map.get_layer_by_name('walls')
         # self.doors = self.map.get_layer_by_name('close_doors')
         # self.floor = self.map.get_layer_by_name('floor')
-        # self.walls = [(pygame.Rect([(x * self.tile_width), (y * self.tile_width),
-        #                            self.tile_width, self.tile_width]), tile) for x, y, tile in self.walls.tiles()
-        #               if tile]
+
+        self.walls = [(pygame.Rect([(x * self.tile_width), (y * self.tile_width),
+                                    self.tile_width, self.tile_width]), tile)
+                      for x, y, tile in self.walls_layer.tiles() if tile]
         # self.floor = [(pygame.Rect([(x * self.tile_width), (y * self.tile_width),
         #                            self.tile_width, self.tile_width]), tile) for x, y, tile in self.floor.tiles()
         #               if tile]
@@ -103,7 +102,3 @@ class Map:
 
     def check_coins(self, player_rect):  # здесь будем проверять ключи и прочие предметы, которые можно будет поднять.
         pass
-
-
-
-
