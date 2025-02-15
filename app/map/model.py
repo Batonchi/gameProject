@@ -7,7 +7,6 @@ import app.characters.model
 
 
 class PlayerCamera:
-
     def __init__(self, target, view_x_zone: int, view_y_zone: int):
         self.dx = target.x - view_x_zone * target.tile_size[0]
         self.dy = target.y - view_y_zone * target.tile_size[1]
@@ -39,7 +38,7 @@ class Map:
         for x, y, tile in self.walls_layer.tiles():
             if tile:
                 self.walls.append(pygame.Rect([(x * tile_width), (y * tile_height), tile_width, tile_height]))
-        print(sorted(self.walls))
+        print(self.walls)
         # self.floor = [(pygame.Rect([(x * self.tile_width), (y * self.tile_width),
         #                            self.tile_width, self.tile_width]), tile) for x, y, tile in self.floor.tiles()
         #               if tile]
@@ -99,11 +98,8 @@ class Map:
                     return x // self.tile_width - 1, y // self.tile_height - 1
 
     def check_tiles(self, player_rect):
-        for wall in self.walls:
-            if player_rect.collide(wall):
-                print("IN")
-                # if player_rect.collidelist(self.walls):
-                return True
+        if player_rect.collidelistall(self.walls):
+            return True
         return False
 
     def check_coins(self, player_rect):  # здесь будем проверять ключи и прочие предметы, которые можно будет поднять.

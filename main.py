@@ -42,7 +42,9 @@ class Game:
                     if event.key == pygame.K_ESCAPE:
                         menu_in_game.game_menu()
             if pygame.key.get_pressed()[pygame.K_w]:
-                if not map_game.check_tiles(character.rect):
+                print(pygame.Rect([character.rect.x, character.y + 1, character.tile_size[0], character.tile_size[1]]))
+                if not map_game.check_tiles(pygame.Rect([character.rect.x, character.y + 1, character.tile_size[0],
+                                                         character.tile_size[1]])):
                     character.move('up')
             if pygame.key.get_pressed()[pygame.K_a]:
                 character.move('left')
