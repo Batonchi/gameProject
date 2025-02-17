@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<tileset version="1.10" tiledversion="1.11.0" name="wall" tilewidth="8" tileheight="8" tilecount="36" columns="0">
+<tileset version="1.10" tiledversion="1.11.0" name="wall" tilewidth="8" tileheight="8" tilecount="37" columns="0">
  <grid orientation="orthogonal" width="1" height="1"/>
  <tile id="0">
   <image source="Тайлы для проета/Tiles/Monochrome/tile_0001.png" width="8" height="8"/>
@@ -108,5 +108,8 @@
  </tile>
  <tile id="36">
   <image source="Тайлы для проета/Tiles/Monochrome/tile_0031.png" width="8" height="8"/>
+ </tile>
+ <tile id="37">
+  <image source="Тайлы для проета/Tiles/Monochrome/tile_0097.png" width="8" height="8"/>
  </tile>
 </tileset>
