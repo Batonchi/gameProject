@@ -29,7 +29,7 @@ class Game:
         map_game = Map(filename_map, tile_width=w_w // 100, tile_height=w_h // 100)
         self.screen.fill((34, 35, 35))
         map_game.render(self.screen, 0, 0, 100, 100)
-        character = Character('character', tile_width=w_w // 100, tile_height=w_h // 100,
+        character = Character('character', tile_width=w_w // 150, tile_height=w_h // 75,
                               speed=(1, 1))
         camera = PlayerCamera(character, 10, 10)
         while running:
@@ -42,20 +42,24 @@ class Game:
                     if event.key == pygame.K_ESCAPE:
                         menu_in_game.game_menu()
             if pygame.key.get_pressed()[pygame.K_w]:
-                print(pygame.Rect([character.rect.x, character.y + 1, character.tile_size[0], character.tile_size[1]]))
-                if not map_game.check_tiles(pygame.Rect([character.rect.x, character.y + 1, character.tile_size[0],
-                                                         character.tile_size[1]])):
+                rect = pygame.Rect([character.rect.x, character.rect.y - 1, character.rect.w, character.rect.h])
+                if not map_game.check_tiles(rect):
+                    character.move('down')
+            if pygame.key.get_pressed()[pygame.K_s]:
+                rect = pygame.Rect([character.rect.x, character.rect.y + 1, character.rect.w, character.rect.h])
+                if not map_game.check_tiles(rect):
                     character.move('up')
             if pygame.key.get_pressed()[pygame.K_a]:
-                character.move('left')
-            if pygame.key.get_pressed()[pygame.K_s]:
-                character.move('down')
+                rect = pygame.Rect([character.rect.x - 1, character.rect.y, character.rect.w, character.rect.h])
+                if not map_game.check_tiles(rect):
+                    character.move('left')
             if pygame.key.get_pressed()[pygame.K_d]:
-                character.move('right')
+                rect = pygame.Rect([character.rect.x + 1, character.rect.y, character.rect.w, character.rect.h])
+                if not map_game.check_tiles(rect):
+                    character.move('right')
             camera.update()
             map_game.update(self.screen, camera)
             self.screen.blit(character.image, (character.x, character.y))
-
             camera.update()
             pygame.event.pump()
             pygame.display.flip()
@@ -211,7 +215,6 @@ class MenuInGame:
                 if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1:
                     if (self.w // 1.5 < e.pos[0] < (self.w // 1.5 + self.w // 5)
                             and 150 < e.pos[1] < 150 + self.h // 7):
-                        print('IN')
                         show_game_menu = False
                     if (self.w // 1.5 < e.pos[0] < (self.w // 1.5 + self.w // 5)
                             and 260 < e.pos[1] < 260 + self.h // 7):
@@ -232,16 +235,3 @@ class EndWindow:
 
 if __name__ == '__main__':
     game = Game()
-
-# if event.key == pygame.K_w:
-#     coors = character.move('up')
-#     map_game.render(screen, coors)
-# elif event.key == pygame.K_a:
-#     coors = character.move('left')
-#     map_game.render(screen, coors)
-# elif event.key == pygame.K_s:
-#     coors = character.move('down')
-#     map_game.render(screen, coors)
-# elif event.key == pygame.K_d:
-#     coors = character.move('right')
-#     map_game.render(screen, coors)

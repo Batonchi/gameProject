@@ -28,13 +28,14 @@ class GetCharacter:
 
 
 class Character(pygame.sprite.Sprite):
-    def __init__(self, character: GetCharacter, tile_width: int = 8, tile_height: int = 8, speed: Tuple[int, int] = (1, 1)):
+    def __init__(self, character: GetCharacter, tile_width: int = 8, tile_height: int = 8,
+                 speed: Tuple[int, int] = (1, 1)):
         super().__init__()
         self.character = character
         # self.emotional_health = self.character.get_info()['emotional_health']
         # self.image = pygame.image.load(os.path.join('app/view/images/', character.get_name() + '.png'))
         self.image = pygame.image.load(os.path.join('app/view/images/', character + '.png'))
-        self.y = 490
+        self.y = 475
         self.x = 425
         self.image = pygame.transform.scale(self.image, (tile_width, tile_height))
         self.tile_size = tile_width, tile_height
@@ -54,17 +55,17 @@ class Character(pygame.sprite.Sprite):
 
     def move(self, word: str):
         if word == 'up':
-            self.y -= self.speed[1]
+            self.y += self.speed[1]
             self.rect.move_ip(0, self.speed[1])
         elif word == 'down':
-            self.y += self.speed[1]
+            self.y -= self.speed[1]
             self.rect.move_ip(0, -self.speed[1])
         elif word == 'left':
             self.x -= self.speed[0]
-            self.rect.move_ip(0, -self.speed[0])
+            self.rect.move_ip(-self.speed[0], 0)
         elif word == 'right':
             self.x += self.speed[0]
-            self.rect.move_ip(0, self.speed[0])
+            self.rect.move_ip(self.speed[0], 0)
 
     def get_coors(self) -> tuple:
         return self.x, self.y

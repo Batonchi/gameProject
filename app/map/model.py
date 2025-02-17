@@ -35,10 +35,6 @@ class Map:
         # self.floor = self.map.get_layer_by_name('floor')
 
         self.walls = []
-        for x, y, tile in self.walls_layer.tiles():
-            if tile:
-                self.walls.append(pygame.Rect([(x * tile_width), (y * tile_height), tile_width, tile_height]))
-        print(self.walls)
         # self.floor = [(pygame.Rect([(x * self.tile_width), (y * self.tile_width),
         #                            self.tile_width, self.tile_width]), tile) for x, y, tile in self.floor.tiles()
         #               if tile]
@@ -66,6 +62,8 @@ class Map:
                         screen.blit(pygame.transform.scale(image, (self.tile_width, self.tile_height)),
                                     (self.left + (x * self.tile_width), self.top + (y * self.tile_height)))
                 else:
+                    self.walls.append(pygame.Rect([x * self.tile_width, y * self.tile_height,
+                                                   self.tile_width, self.tile_height]))
                     image = pygame.image.load(walls[0])
                     screen.blit(pygame.transform.scale(image, (self.tile_width, self.tile_height)),
                                 (self.left + (x * self.tile_width), self.top + (y * self.tile_height)))

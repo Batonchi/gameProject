@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<tileset version="1.10" tiledversion="1.11.0" name="wall" tilewidth="8" tileheight="8" tilecount="27" columns="0">
+<tileset version="1.10" tiledversion="1.11.0" name="wall" tilewidth="8" tileheight="8" tilecount="36" columns="0">
  <grid orientation="orthogonal" width="1" height="1"/>
  <tile id="0">
   <image source="Тайлы для проета/Tiles/Monochrome/tile_0001.png" width="8" height="8"/>
@@ -81,5 +81,32 @@
  </tile>
  <tile id="26">
   <image source="Тайлы для проета/Tiles/Monochrome/tile_0096.png" width="8" height="8"/>
+ </tile>
+ <tile id="28">
+  <image source="Тайлы для проета/Tiles/Monochrome/tile_0061.png" width="8" height="8"/>
+ </tile>
+ <tile id="29">
+  <image source="Тайлы для проета/Tiles/Monochrome/tile_0053.png" width="8" height="8"/>
+ </tile>
+ <tile id="30">
+  <image source="Тайлы для проета/Tiles/Monochrome/tile_0092.png" width="8" height="8"/>
+ </tile>
+ <tile id="31">
+  <image source="Тайлы для проета/Tiles/Monochrome/tile_0062.png" width="8" height="8"/>
+ </tile>
+ <tile id="32">
+  <image source="Тайлы для проета/Tiles/Monochrome/tile_0057.png" width="8" height="8"/>
+ </tile>
+ <tile id="33">
+  <image source="Тайлы для проета/Tiles/Monochrome/tile_0056.png" width="8" height="8"/>
+ </tile>
+ <tile id="34">
+  <image source="Тайлы для проета/Tiles/Monochrome/tile_0132.png" width="8" height="8"/>
+ </tile>
+ <tile id="35">
+  <image source="Тайлы для проета/Tiles/Monochrome/tile_0047.png" width="8" height="8"/>
+ </tile>
+ <tile id="36">
+  <image source="Тайлы для проета/Tiles/Monochrome/tile_0031.png" width="8" height="8"/>
  </tile>
 </tileset>
