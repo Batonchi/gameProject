@@ -1,7 +1,9 @@
+from typing import Tuple
+
 import pygame
 import pygame.camera
 
-from database import Connection, create_database
+from database import create_database
 from app.characters.model import Character
 from app.map.model import Map, PlayerCamera
 from pygame_widgets.button import Button
@@ -19,9 +21,8 @@ class Game:
 
         w_w, w_h = self.screen.get_size()
 
-        menu = Menu(self.screen, w_w, w_h)
-        menu_in_game = MenuInGame(self.screen, w_w, w_h)
-        menu.main_menu(self.screen)
+        render_other_window_handler = self.RenderingOtherWindow(self.screen, w_w, w_h)
+        render_other_window_handler.render('main_menu')
 
         running = True
 
@@ -33,6 +34,7 @@ class Game:
                               speed=(1, 1))
         camera = PlayerCamera(character, 10, 10)
         while running:
+            pygame.mouse.set_visible(False)
             events = pygame.event.get()
             clock = pygame.time.Clock()
             for event in events:
@@ -40,21 +42,25 @@ class Game:
                     running = False
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
-                        menu_in_game.game_menu()
+                        render_other_window_handler.render('pause_game')
             if pygame.key.get_pressed()[pygame.K_w]:
-                rect = pygame.Rect([character.rect.x, character.rect.y - 1, character.rect.w, character.rect.h])
+                rect = pygame.Rect([character.rect.x, character.rect.y - character.speed[1], character.rect.w,
+                                    character.rect.h])
                 if not map_game.check_tiles(rect):
                     character.move('down')
             if pygame.key.get_pressed()[pygame.K_s]:
-                rect = pygame.Rect([character.rect.x, character.rect.y + 1, character.rect.w, character.rect.h])
+                rect = pygame.Rect([character.rect.x, character.rect.y + character.speed[1], character.rect.w,
+                                    character.rect.h])
                 if not map_game.check_tiles(rect):
                     character.move('up')
             if pygame.key.get_pressed()[pygame.K_a]:
-                rect = pygame.Rect([character.rect.x - 1, character.rect.y, character.rect.w, character.rect.h])
+                rect = pygame.Rect([character.rect.x - character.speed[0], character.rect.y, character.rect.w,
+                                    character.rect.h])
                 if not map_game.check_tiles(rect):
                     character.move('left')
             if pygame.key.get_pressed()[pygame.K_d]:
-                rect = pygame.Rect([character.rect.x + 1, character.rect.y, character.rect.w, character.rect.h])
+                rect = pygame.Rect([character.rect.x + character.speed[0], character.rect.y, character.rect.w,
+                                    character.rect.h])
                 if not map_game.check_tiles(rect):
                     character.move('right')
             camera.update()
@@ -66,171 +72,172 @@ class Game:
             pygame.display.update()
             clock.tick(FPS)
 
-    def start(self):
-        pass
+    class RenderingOtherWindow:
+        def __init__(self, screen: pygame.surface.Surface, w_w: int, w_h: int):
+            self.screen = screen
+            self.w_w = w_w
+            self.w_h = w_h
+            self.base_button_arguments = {
+                'win': self.screen,
+                'fontSize': 30,
+                'margin': 20,
+                'inactiveColour': (250, 250, 250),
+                'pressedColour': (0, 255, 0),
+                'radius': 50
+            }
+            self.arguments_for_buttons = {
+                'exit-btn': {
+                    'text': 'выйти из игры',
+                    'onclick': ''
+                },
+                'start_game-btn': {
+                    'text': 'начать игру',
+                    'onclick': ''
+                },
+                'back-btn': {
+                    'text': 'назад',
+                    'onclick': ''
+                },
+                'continue_game_session-btn': {
+                    'text': 'продолжить игру',
+                    'onclick': ''
+                },
+                'continue_game-btn': {
+                    'text': 'продолжить',
+                    'onclick': ''
+                },
+                'new_game_session-btn': {
+                    'text': 'новая игра',
+                    'onclick': print('hui')
+                },
+                'about-btn': {
+                    'text': 'о игре',
+                    'onclick': ''
+                },
+                'exit_to_menu-btn': {
+                    'text': 'вытии в меню',
+                    'onclick': ''
+                },
+                'train-btn': {
+                    'text': 'обучение',
+                    'onclick': ''
+                },
+                'exit_note-btn': {
+                    'onclick': ''
+                }
+            }
+            self.base_window_arguments = {
+                'background-position': (0, 0),
+                'background-size': (self.w_w, self.w_h),
+                'background-color': (255, 255, 255),
+            }
+            # здесь надо будет написать какие окна тееб нада
+            # если что кнопки тоже можешь добавить
+            self.types_of_window = {
+                'main_menu': {
+                    'background-image': 'app/view/images/for_main_menu.jpg',
+                    'caption': 'Меню',
+                    'buttons_column_groups': {
+                        1: {
+                            'xy_start': (self.w_w // 3, self.w_h // 4),
+                            'width_height': (self.w_w // 3, self.w_h // 12),
+                            'gap': 10,
+                            'buttons': {
+                                1: ('start_game-btn', 'continue_game_session-btn'),
+                                2: ('new_game_session-btn',),
+                                3: ('train-btn',),
+                                4: ('about-btn',),
+                                5: ('exit-btn',),
+                            }
+                        }
+                    }
+                },
+                'pause_game': {
+                    'caption': 'Игра приостановлена',
+                    'buttons_column_groups': {
+                        1: {
+                            'xy_start': (self.w_w // 3, self.w_h // 6),
+                            'width_height': (self.w_w // 10, self.w_h // 15),
+                            'gap': 10,
+                            'buttons': {
+                                1: ('continue_game-btn',),
+                                2: ('exit_to_menu-btn',),
+                                3: ('exit-btn',)
+                            }
+                        }
+                    }
+                },
+            }
 
-    def end(self):
-        pass
-
-
-class Menu:
-    def __init__(self, screen, w, h):
-        self.screen = screen
-        self.w = w
-        self.h = h
-
-    def show_about_the_game(self, screen):
-        screen.fill((0, 0, 0))
-        pygame.display.set_caption('Об игре')
-        button_back = Button(screen, self.w // 12, self.h - 120, 100, 80, text='Назад',
-                             fontSize=30, margin=20,
-                             inactiveColour=(250, 250, 250),
-                             pressedColour=(0, 255, 0), radius=50,
-                             onClick=None, textVAlign='center', textHAlign='center')
-        show_menu = True
-        while show_menu:
-            events = pygame.event.get()
-            for e in events:
-                if e.type == pygame.QUIT:
-                    show_menu = False
-                    quit()
-                if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1:
-                    if (self.w // 12 < e.pos[0] < self.w // 12
-                            + 200 and self.h - 120 < e.pos[1] < self.h - 120 + 80):
-                        show_menu = False
-            button_back.listen(events)
-            button_back.draw()
-            pygame.display.update()
-        return
-
-    def show_trainig_screen(self, screen):
-        screen.fill((0, 0, 0))
-        pygame.display.set_caption('Обучение')
-        button_back = Button(screen, self.w // 12, self.h - 120, 100, 80, text='Назад',
-                             fontSize=30, margin=20,
-                             inactiveColour=(250, 250, 250),
-                             pressedColour=(0, 255, 0), radius=0,
-                             onClick=None, textVAlign='center', textHAlign='center')
-        show_menu = True
-        while show_menu:
-            events = pygame.event.get()
-            for e in events:
-                if e.type == pygame.QUIT:
-                    show_menu = False
-                    quit()
-                if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1:
-                    if (self.w // 12 < e.pos[0] < self.w // 12
-                            + 200 and self.h - 120 < e.pos[1] < self.h - 120 + 80):
-                        show_menu = False
-            button_back.listen(events)
-            button_back.draw()
-            pygame.display.update()
-        return
-
-    def main_menu(self, screen):
-        screen.fill((0, 0, 0))
-        show_main_menu = True
-        pygame.display.set_caption('Меню')
-
-        button_play = Button(screen, self.w // 1.5, 150, self.w // 5, self.h // 15, text='Новая игра',
-                             fontSize=30,
-                             inactiveColour=(250, 250, 250),
-                             pressedColour=(0, 255, 0), radius=50,
-                             onClick=None, textVAlign='center', textHAlign='center')
-        button_training = Button(screen, self.w // 1.5, 260, self.w // 5, self.h // 15, text='Обучение',
-                                 fontSize=30, margin=20,
-                                 inactiveColour=(250, 250, 250),
-                                 pressedColour=(0, 255, 0), radius=50,
-                                 onClick=None, textVAlign='center', textHAlign='center')
-        button_about_the_game = Button(screen, self.w // 1.5, 370, self.w // 5, self.h // 15, text='Об игре',
-                                       fontSize=30, margin=20,
-                                       inactiveColour=(250, 250, 250),
-                                       pressedColour=(0, 255, 0), radius=50,
-                                       onClick=None, textVAlign='center', textHAlign='center')
-        button_exit = Button(screen, self.w // 1.5, 480, self.w // 5, self.h // 15, text='Выход',
-                             fontSize=30, margin=20,
-                             inactiveColour=(250, 250, 250),
-                             pressedColour=(0, 255, 0), radius=50,
-                             onClick=None, textVAlign='center', textHAlign='center')
-        bg_menu = pygame.image.load('app/view/images/for_main_menu.jpg')
-        bg_menu = pygame.transform.scale(bg_menu, (self.w, self.h))
-        while show_main_menu:
-            events = pygame.event.get()
-            for e in events:
-                if e.type == pygame.QUIT:
-                    show_main_menu = False
-                    pygame.quit()
-                if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1:
-                    if (self.w // 1.5 < e.pos[0] < (self.w // 1.5 + self.w // 5)
-                            and 150 < e.pos[1] < 150 + self.h // 7):
-                        show_main_menu = False
-                    if (self.w // 1.5 < e.pos[0] < (self.w // 1.5 + self.w // 5)
-                            and 260 < e.pos[1] < 260 + self.h // 7):
-                        self.show_trainig_screen(screen)
-                    if (self.w // 1.5 < e.pos[0] < (self.w // 1.5 + self.w // 5)
-                            and 370 < e.pos[1] < 370 + self.h // 7):
-                        self.show_about_the_game(screen)
-                    if (self.w // 1.5 < e.pos[0] < (self.w // 1.5 + self.w // 5)
-                            and 480 < e.pos[1] < 460 + self.h // 7):
+        def render(self, type_window: str):
+            pygame.mouse.set_visible(True)
+            data = self.types_of_window.get(type_window)
+            if data is None:
+                return
+            pygame.display.set_caption(data.get('caption', 'Просто окно'))
+            all_buttons = []
+            if data.get('buttons_column_groups'):
+                for column_group in data.get('buttons_column_groups').values():
+                    all_buttons.extend(self.iterate_group_buttons(column_group, 'column'))
+            if data.get('buttons_row_groups'):
+                for row_group in data.get('buttons_row_groups').values():
+                    all_buttons.extend(self.iterate_group_buttons(row_group, 'row'))
+            background_color = self.base_window_arguments['background-color']
+            background_image = False
+            if data.get('background-image'):
+                background_image = pygame.image.load(data['background-image'])
+                background_image = pygame.transform.scale(background_image,
+                                                          self.base_window_arguments['background-size'])
+                self.screen.blit(background_image, self.base_window_arguments['background-position'])
+            show = True
+            while show:
+                self.screen.fill(background_color)
+                events = pygame.event.get()
+                for event in events:
+                    if event.type == pygame.QUIT:
+                        show = False
                         quit()
-            screen.blit(bg_menu, (0, 0))
-            button_play.listen(events)
-            button_play.draw()
-            button_training.listen(events)
-            button_training.draw()
-            button_about_the_game.listen(events)
-            button_about_the_game.draw()
-            button_exit.listen(events)
-            button_exit.draw()
+                if background_image:
+                    self.screen.blit(background_image, self.base_window_arguments['background-position'])
+                for button in all_buttons:
+                    button.listen(events)
+                    button.draw()
+                pygame.display.update()
+                # in func we need return caption_name
 
-            pygame.display.update()
+        def iterate_group_buttons(self, group: dict, type_group: str) -> list:
+            res_buttons = []
+            for position, button in group.get('buttons', {}).items():
+                width, height = group.get('width_height', (100, 20))
+                gap = group.get('gap', 10)
+                x_y_start = group.get('xy_start', (0, 0))
+                if type_group == 'column':
+                    res_buttons.append(self.create_button(position, button[0], width, height, gap, x_y_start, 'y'))
+                else:
+                    res_buttons.append(self.create_button(position, button[0], width, height, gap, x_y_start, 'x'))
+            return res_buttons
 
+        def create_button(self, position: int, name_button: str, width: int, height: int,
+                          gap: int, x_y_start: Tuple[int, int], x_or_y: str) -> Button:
+            x = x_y_start[0]
+            y = x_y_start[1]
+            if x_or_y == 'x':
+                x += position * (width + gap)
+            else:
+                y += position * (height + gap)
+            return Button(self.screen, x, y, width, height,
+                          text=self.arguments_for_buttons[name_button]['text'],
+                          onClick=self.arguments_for_buttons[name_button]['onclick'],
+                          inactiveColour=self.base_button_arguments['inactiveColour'],
+                          pressedColour=self.base_button_arguments['pressedColour'],
+                          radius=self.base_button_arguments['radius'],
+                          fontSize=self.base_button_arguments['fontSize'],
+                          margin=self.base_button_arguments['margin'])
 
-class MenuInGame:
-    def __init__(self, screen, w, h):
-        self.screen = screen
-        self.w, self.h = w, h
-
-    def game_menu(self):
-        self.screen.fill((0, 0, 0))
-        show_game_menu = True
-        button_play = Button(self.screen, self.w // 1.5, 150, self.w // 5, self.h // 7, text='Продолжить',
-                             fontSize=30, margin=20,
-                             inactiveColour=(250, 250, 250),
-                             pressedColour=(0, 255, 0), radius=0,
-                             onClick=None)
-        button_exit = Button(self.screen, self.w // 1.5, 260, self.w // 5, self.h // 7, text='Выход',
-                             fontSize=30, margin=20,
-                             inactiveColour=(250, 250, 250),
-                             pressedColour=(0, 255, 0), radius=0,
-                             onClick=None)
-        bg_menu = pygame.image.load('app/view/images/for_main_menu.jpg')
-        bg_menu = pygame.transform.scale(bg_menu, (self.w, self.h))
-        while show_game_menu:
-            events = pygame.event.get()
-            for e in events:
-                if e.type == pygame.QUIT:
-                    show_game_menu = False
-                    pygame.quit()
-                if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1:
-                    if (self.w // 1.5 < e.pos[0] < (self.w // 1.5 + self.w // 5)
-                            and 150 < e.pos[1] < 150 + self.h // 7):
-                        show_game_menu = False
-                    if (self.w // 1.5 < e.pos[0] < (self.w // 1.5 + self.w // 5)
-                            and 260 < e.pos[1] < 260 + self.h // 7):
-                        quit()
-
-            self.screen.blit(bg_menu, (0, 0))
-            button_play.listen(events)
-            button_play.draw()
-            button_exit.listen(events)
-            button_exit.draw()
-
-            pygame.display.update()
-
-
-class EndWindow:
-    pass
+        class ButtonsOnClickFunctions:
+            # этот класс где методы все со @staticmethods,
+            # то есть вызываються без иницилизации класса
+            pass
 
 
 if __name__ == '__main__':

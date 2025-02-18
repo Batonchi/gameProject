@@ -29,14 +29,14 @@ class GetCharacter:
 
 class Character(pygame.sprite.Sprite):
     def __init__(self, character: GetCharacter, tile_width: int = 8, tile_height: int = 8,
-                 speed: Tuple[int, int] = (1, 1)):
+                 speed: Tuple[float, float] = (1, 1)):
         super().__init__()
         self.character = character
         # self.emotional_health = self.character.get_info()['emotional_health']
         # self.image = pygame.image.load(os.path.join('app/view/images/', character.get_name() + '.png'))
         self.image = pygame.image.load(os.path.join('app/view/images/', character + '.png'))
-        self.y = 475
-        self.x = 425
+        self.y = 420
+        self.x = 800
         self.image = pygame.transform.scale(self.image, (tile_width, tile_height))
         self.tile_size = tile_width, tile_height
         self.rect = pygame.Rect([self.x, self.y, tile_width, tile_height])
@@ -102,3 +102,6 @@ class BackPack:
         for item in self.rest:
             if item.item_name == name:
                 return item
+
+    def do_selected(self):
+        pass
