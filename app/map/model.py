@@ -31,13 +31,8 @@ class Map:
         self.tile_width = tile_width
         self.tile_height = tile_height
         self.walls_layer = self.map.get_layer_by_name('walls')
-        # self.doors = self.map.get_layer_by_name('close_doors')
-        # self.floor = self.map.get_layer_by_name('floor')
-
+        self.doors = []
         self.walls = []
-        # self.floor = [(pygame.Rect([(x * self.tile_width), (y * self.tile_width),
-        #                            self.tile_width, self.tile_width]), tile) for x, y, tile in self.floor.tiles()
-        #               if tile]
         # self.doors = [(pygame.Rect([(x * self.tile_width), (y * self.tile_width),
         #                            self.tile_width, self.tile_width]), tile) for x, y, tile in self.doors.tiles()
         #               if tile]
@@ -53,6 +48,8 @@ class Map:
                 if walls is None:
                     if not (doors is None):
                         image = pygame.image.load(doors[0])
+                        self.doors.append(pygame.Rect([x * self.tile_width, y * self.tile_height,
+                                                       self.tile_width, self.tile_height]))
                         screen.blit(pygame.transform.scale(image, (self.tile_width, self.tile_height)),
                                     (self.left + (x * self.tile_width), self.top + (y * self.tile_height)))
                     else:
@@ -95,10 +92,50 @@ class Map:
                 if x % self.tile_width == 0 and y % self.tile_height == 0:
                     return x // self.tile_width - 1, y // self.tile_height - 1
 
-    def check_tiles(self, player_rect):
+    def collide_with_walls(self, player_rect):
         if player_rect.collidelistall(self.walls):
             return True
         return False
 
-    def check_coins(self, player_rect):  # здесь будем проверять ключи и прочие предметы, которые можно будет поднять.
+
+class Doors(pygame.sprite.Sprite):
+    def __init__(self, doors_rects: list, tile_width: int, tile_height: int):
+        super().__init__()
+        self.tile_width, self.tile_height = tile_width, tile_height
+        self.rectangles_doors = doors_rects.copy()
+        self.zone_doors_rects = []
+        for rect in self.rectangles_doors:
+            self.zone_doors_rects.append(pygame.Rect([rect.x - 6, rect.y - 6, rect.w + 10, rect.h + 10]))
+        print(sorted(self.rectangles_doors))
+        self.open_doors = []
+
+    def collide_with_doors(self, player_rect):
+        if player_rect.collidelistall(self.rectangles_doors):
+            return True
+        return False
+
+    def removing_closed_door(self, door_zone):
+        for door in self.rectangles_doors:
+            if door.colliderect(door_zone):
+                self.rectangles_doors.remove(door)
+
+    def update(self, screen, rect_door: pygame.Rect, image_open_door: pygame.image = None):
+        self.open_doors.append(rect_door)
+        if image_open_door is not None:
+            screen.blit(pygame.transform.scale(image_open_door, (self.tile_width, self.tile_height)),
+                        (rect_door.x * self.tile_width),
+                        (rect_door.y * self.tile_height))
+
+    def check_rect_in_zone(self, player_rect: pygame.Rect):
+        for zone_door in self.zone_doors_rects:
+            if player_rect.colliderect(zone_door):
+                return [True, zone_door]
+        return [False]
+
+
+class CameraDoors:
+    def __init__(self, target, view_x_zone: int, view_y_zone: int):
+        pass
+
+    def update(self):
         pass

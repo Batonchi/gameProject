@@ -5,7 +5,7 @@ import pygame.camera
 
 from database import create_database
 from app.characters.model import Character
-from app.map.model import Map, PlayerCamera
+from app.map.model import Map, PlayerCamera, Doors
 from pygame_widgets.button import Button
 
 pygame.init()
@@ -33,6 +33,7 @@ class Game:
         character = Character('character', tile_width=w_w // 150, tile_height=w_h // 75,
                               speed=(1, 1))
         camera = PlayerCamera(character, 10, 10)
+        doors = Doors(map_game.doors, tile_width=w_w // 100, tile_height=w_h // 100)
         while running:
             pygame.mouse.set_visible(False)
             events = pygame.event.get()
@@ -41,28 +42,39 @@ class Game:
                 if event.type == pygame.QUIT:
                     running = False
                 if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_e:
+                        result = doors.check_rect_in_zone(character.rect)
+                        if result[0]:
+                            doors.removing_closed_door(result[1])
+                            doors.update(self.screen, pygame.Rect(result[1].x + 6, result[1].y + 6,
+                                                                  result[1].width - 10, result[1].height - 10))
+                if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
                         render_other_window_handler.render('pause_game')
             if pygame.key.get_pressed()[pygame.K_w]:
                 rect = pygame.Rect([character.rect.x, character.rect.y - character.speed[1], character.rect.w,
                                     character.rect.h])
-                if not map_game.check_tiles(rect):
-                    character.move('down')
+                if not map_game.collide_with_walls(rect):
+                    if not doors.collide_with_doors(rect):
+                        character.move('down')
             if pygame.key.get_pressed()[pygame.K_s]:
                 rect = pygame.Rect([character.rect.x, character.rect.y + character.speed[1], character.rect.w,
                                     character.rect.h])
-                if not map_game.check_tiles(rect):
-                    character.move('up')
+                if not map_game.collide_with_walls(rect):
+                    if not doors.collide_with_doors(rect):
+                        character.move('up')
             if pygame.key.get_pressed()[pygame.K_a]:
                 rect = pygame.Rect([character.rect.x - character.speed[0], character.rect.y, character.rect.w,
                                     character.rect.h])
-                if not map_game.check_tiles(rect):
-                    character.move('left')
+                if not map_game.collide_with_walls(rect):
+                    if not doors.collide_with_doors(rect):
+                        character.move('left')
             if pygame.key.get_pressed()[pygame.K_d]:
                 rect = pygame.Rect([character.rect.x + character.speed[0], character.rect.y, character.rect.w,
                                     character.rect.h])
-                if not map_game.check_tiles(rect):
-                    character.move('right')
+                if not map_game.collide_with_walls(rect):
+                    if not doors.collide_with_doors(rect):
+                        character.move('right')
             camera.update()
             map_game.update(self.screen, camera)
             self.screen.blit(character.image, (character.x, character.y))
