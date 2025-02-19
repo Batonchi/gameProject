@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.11.0" orientation="orthogonal" renderorder="right-down" width="100" height="100" tilewidth="8" tileheight="8" infinite="0" nextlayerid="4" nextobjectid="1">
+<map version="1.10" tiledversion="1.11.0" orientation="orthogonal" renderorder="right-down" width="100" height="100" tilewidth="8" tileheight="8" infinite="0" nextlayerid="5" nextobjectid="1">
  <tileset firstgid="1" source="floor.tsx"/>
  <tileset firstgid="19" source="wall.tsx"/>
  <tileset firstgid="57" source="doors.tsx"/>
@@ -16,6 +16,11 @@
  <layer id="3" name="close_doors" width="100" height="100">
   <data encoding="base64" compression="zlib">
    eJztwTEBAAAAwqD1T+1lC6AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAbnEAAAQ==
+  </data>
+ </layer>
+ <layer id="4" name="keys" width="100" height="100">
+  <data encoding="base64" compression="zlib">
+   eJzt2bEJADAIBMBfLfsvlTZFugREuZtA5IsXEwAAAAAAmG9VDwAAEJ0EAAAAAAAAqOdvSReyCgDwj24FAABM5NZ5Z4cAAHd6EgAAAAAAAAAAAAAAAAAAcNp8CgIJ
   </data>
  </layer>
 </map>

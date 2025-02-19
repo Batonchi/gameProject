@@ -72,7 +72,7 @@ class RenderingOtherWindow:
                 'onclick': ''
             },
             'exit_to_menu-btn': {
-                'text': 'вытии в меню',
+                'text': 'выйти в меню',
                 'onclick': ''
             },
             'train-btn': {
@@ -203,7 +203,8 @@ class RenderingOtherWindow:
         character = Character('character', tile_width=game_class.w_w // 150, tile_height=game_class.w_h // 75,
                               speed=(1, 1))
         camera = PlayerCamera(character, 10, 10)
-        doors = Doors(map_game.doors, tile_width=w_w // 100, tile_height=w_h // 100)
+        doors = Doors(map_game.doors, tile_width=self.w_w // 100, tile_height=self.w_h // 100,
+                      pairs_doors_rects=map_game.rects_doors)
         while running:
             pygame.mouse.set_visible(False)
             events = pygame.event.get()
@@ -216,8 +217,7 @@ class RenderingOtherWindow:
                         result = doors.check_rect_in_zone(character.rect)
                         if result[0]:
                             doors.removing_closed_door(result[1])
-                            doors.update(self.screen, pygame.Rect(result[1].x + 6, result[1].y + 6,
-                                                                  result[1].width - 10, result[1].height - 10))
+                            doors.update(self.screen)
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
                         game_class.render_other_window_handler.render('pause_game')
@@ -245,10 +245,11 @@ class RenderingOtherWindow:
                 if not map_game.collide_with_walls(rect):
                     if not doors.collide_with_doors(rect):
                         character.move('right')
+
             camera.update()
             map_game.update(game_class.screen, camera)
+            doors.update(self.screen)
             game_class.screen.blit(character.image, (character.x, character.y))
-            camera.update()
             pygame.event.pump()
             pygame.display.flip()
             pygame.display.update()

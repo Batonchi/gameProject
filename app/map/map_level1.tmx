@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.11.0" orientation="orthogonal" renderorder="right-down" width="100" height="100" tilewidth="8" tileheight="8" infinite="0" nextlayerid="5" nextobjectid="2">
+<map version="1.10" tiledversion="1.11.0" orientation="orthogonal" renderorder="right-down" width="100" height="100" tilewidth="8" tileheight="8" infinite="0" nextlayerid="6" nextobjectid="2">
  <tileset firstgid="1" source="floor1.tsx"/>
  <tileset firstgid="2" source="floor.tsx"/>
  <tileset firstgid="20" source="wall.tsx"/>
  <tileset firstgid="58" source="doors.tsx"/>
- <tileset firstgid="66" source="top.tsx"/>
+ <tileset firstgid="67" source="top.tsx"/>
  <layer id="1" name="floor" width="100" height="100">
   <data encoding="base64" compression="zlib">
    eJzt21GOgyAUBVDromb/S5tMJk0NoQIWfFTPx/mo2gbf1RaEPpZleQAAAAAAAAAAAAAAAHypnwnawCuLmjxkdrym29fp9qNZ/FknONdv8a62aTZ7+ZS2M1e2xGYS3QZe94Y84mpf2kZcHtvtsulvXd73U0t9LXmMyaImjyP76ZtHK/n0ySO6HXvti24D/57PX3rfw7TnkPvek0dd7c7Kw29TbM65cWh0u+7o7mOaO5/7t9X67tfqTHnJYi6yOKeeva97uY3NKjLbq2upb6nP/25eSh6f5dGzhjLpV8PodjAmV9nGK82f59Y+ck4eR/YzJpNP9gMv7pd5+D2ZS0t/a5ubOfOxc+KlefF1c1y6ruRqa0xq69zrGUtp/juX0TOPdJ3P1db8tNTzkzXtLeusc8fk7ocr5tBjvFwzl9j7u+6K/YAz/sMxOo/oGp6V0YhMos8Neom8nt1Pc5HHXMyRAH+2/dk18zp9LpG+d+/zasfe0TWYyTaHvecO6di99Lyv5bjc9jvnlNZhr46912PVZgUAAAAAAAAAvy7HUyU=
@@ -18,6 +18,11 @@
  <layer id="4" name="close_doors" width="100" height="100">
   <data encoding="base64" compression="zlib">
    eJzt1NEJwDAIBcDslX6Y/ZdqZwiRSL0D/8JDjDgGAAAAAAAAAAAAAAAAAADwR89X83YTDa2kt+zxH+dlzMm92mdvAQAAAAAAAAAA8kTxvG6ieF43UTwPAAAAAAAAAAAAAADghBfnWAP1
+  </data>
+ </layer>
+ <layer id="5" name="keys" width="100" height="100">
+  <data encoding="base64" compression="zlib">
+   eJzt2kENADAIA0C0zb8oLOzXAHcKmvBpE6oAAAAAAAAAAAAAAAAAgF8vHQAAiNEDAAAA2MLGBQAAAAAAAAAm8/twk7sDAAAAAAAAAAAAkNARywFL
   </data>
  </layer>
 </map>
