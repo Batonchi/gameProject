@@ -31,12 +31,13 @@ class Map:
         self.tile_width = tile_width
         self.tile_height = tile_height
         self.walls_layer = self.map.get_layer_by_name('walls')
-        self.doors = []
+
         self.rects_doors = dict()
+
         self.walls = []
-        # self.doors = [(pygame.Rect([(x * self.tile_width), (y * self.tile_width),
-        #                            self.tile_width, self.tile_width]), tile) for x, y, tile in self.doors.tiles()
-        #               if tile]
+        self.keys = []
+        self.doors = []
+
         self.width = 100
         self.height = 100
 
@@ -50,13 +51,22 @@ class Map:
                 if walls is None:
                     if not (doors is None):
                         image = pygame.image.load(doors[0])
+
                         rect = pygame.Rect([x * self.tile_width, y * self.tile_height,
                                             self.tile_width, self.tile_height])
+
                         self.doors.append(rect)
                         self.rects_doors[str(rect)] = [doors[0].split('/')[-1]]
+
                         screen.blit(pygame.transform.scale(image, (self.tile_width, self.tile_height)),
                                     (self.left + (x * self.tile_width), self.top + (y * self.tile_height)))
                     elif key is not None:
+
+                        rect = pygame.Rect([x * self.tile_width, y * self.tile_height,
+                                            self.tile_width, self.tile_height])
+
+                        self.keys.append(rect)
+
                         image = pygame.image.load(key[0])
                         screen.blit(pygame.transform.scale(image, (self.tile_width, self.tile_height)),
                                     (self.left + (x * self.tile_width), self.top + (y * self.tile_height)))
@@ -69,6 +79,7 @@ class Map:
                 else:
                     self.walls.append(pygame.Rect([x * self.tile_width, y * self.tile_height,
                                                    self.tile_width, self.tile_height]))
+
                     image = pygame.image.load(walls[0])
                     screen.blit(pygame.transform.scale(image, (self.tile_width, self.tile_height)),
                                 (self.left + (x * self.tile_width), self.top + (y * self.tile_height)))
@@ -109,10 +120,13 @@ class Map:
 class Doors(pygame.sprite.Sprite):
     def __init__(self, doors_rects: list, tile_width: int, tile_height: int, pairs_doors_rects: dict):
         super().__init__()
+
         self.tile_width, self.tile_height = tile_width, tile_height
+
         self.pair_doors_rects = pairs_doors_rects
         self.rectangles_doors = doors_rects.copy()
         self.zone_doors_rects = []
+
         for rect in self.rectangles_doors:
             self.zone_doors_rects.append(pygame.Rect([rect.x - 6, rect.y - 6, rect.w + 10, rect.h + 10]))
         self.open_doors = []
@@ -148,18 +162,29 @@ class Doors(pygame.sprite.Sprite):
 
 
 class KeysDoors:
-    def __init__(self, screen, tile_width: int, tile_height: int):
-        pass
+    def __init__(self, screen, keys: list, tile_width: int, tile_height: int):
+        self.tile_width, self.tile_height = tile_width, tile_height
 
-    def render(self):
-        pass
+        self.rects_keys = keys.copy()
+        self.zone_keys_rects = []
 
-    def update(self):
-        pass
+        for rect in self.rects_keys:
+            self.zone_keys_rects.append(pygame.Rect([rect.x - 6, rect.y - 6, rect.w + 10, rect.h + 10]))
+        self.keys_taken = []
+
+    def add_taken_key(self, key_zone):
+        for key in self.rects_keys:
+            if key.colliderect(key_zone):
+                self.keys_taken.append(key)
+
+    def update(self, screen):
+        for el in self.keys_taken:
+            image = pygame.image.load(os.path.join('app/view/images/', 'tile_0017.png'))
+            screen.blit(pygame.transform.scale(image, (self.tile_width, self.tile_height)), (el.x, el.y))
 
     def check_rect_in_zone(self, player_rect: pygame.Rect):
-        for zone_door in self.zone_keys_rects:
-            if player_rect.colliderect(zone_door):
-                return [True, zone_door]
+        for zone_key in self.zone_keys_rects:
+            if player_rect.colliderect(zone_key):
+                return [True, zone_key]
         return [False]
 

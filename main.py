@@ -5,7 +5,7 @@ import pygame_widgets
 from database import create_database
 from typing import Tuple
 from app.characters.model import Character
-from app.map.model import Map, PlayerCamera, Doors
+from app.map.model import Map, PlayerCamera, Doors, KeysDoors
 from pygame_widgets.button import Button
 
 
@@ -205,6 +205,8 @@ class RenderingOtherWindow:
         camera = PlayerCamera(character, 10, 10)
         doors = Doors(map_game.doors, tile_width=self.w_w // 100, tile_height=self.w_h // 100,
                       pairs_doors_rects=map_game.rects_doors)
+        keysdoors = KeysDoors(self.screen, keys=map_game.keys, tile_width=self.w_w // 100, tile_height=self.w_h // 100
+                              )
         while running:
             pygame.mouse.set_visible(False)
             events = pygame.event.get()
@@ -214,10 +216,13 @@ class RenderingOtherWindow:
                     running = False
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_e:
-                        result = doors.check_rect_in_zone(character.rect)
-                        if result[0]:
-                            doors.removing_closed_door(result[1])
-                            doors.update(self.screen)
+                        result_d = doors.check_rect_in_zone(character.rect)
+                        result_k = keysdoors.check_rect_in_zone(character.rect)
+                        if result_d[0]:
+                            doors.removing_closed_door(result_d[1])
+                        if result_k[0]:
+                            keysdoors.add_taken_key(result_k[1])
+                            # здесь еще нужно дописать, чтобы в инвентарь ключ добавлялся
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
                         game_class.render_other_window_handler.render('pause_game')
@@ -249,6 +254,7 @@ class RenderingOtherWindow:
             camera.update()
             map_game.update(game_class.screen, camera)
             doors.update(self.screen)
+            keysdoors.update(self.screen)
             game_class.screen.blit(character.image, (character.x, character.y))
             pygame.event.pump()
             pygame.display.flip()
