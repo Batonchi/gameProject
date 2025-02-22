@@ -69,7 +69,7 @@ class RenderingOtherWindow:
             },
             'about-btn': {
                 'text': 'о игре',
-                'onclick': ''
+                'onclick': lambda: self.show_about_the_game()
             },
             'exit_to_menu-btn': {
                 'text': 'выйти в меню',
@@ -77,7 +77,7 @@ class RenderingOtherWindow:
             },
             'train-btn': {
                 'text': 'обучение',
-                'onclick': ''
+                'onclick': lambda: self.show_training_screen()
             },
             'exit_note-btn': {
                 'onclick': ''
@@ -124,7 +124,27 @@ class RenderingOtherWindow:
                     }
                 }
             },
+            'training_menu': {
+                'background-image': 'app/view/images/training.png',
+                'caption': 'Обучение/управление',
+                'buttons_column_groups': {
+                    1: {
+                        'xy_start': (self.w_w // 3, self.w_h // 2),
+                        'width_height': (self.w_w // 3, self.w_h),
+                        'gap': 10,
+                        'buttons': {
+                            1: ('exit_to_menu-btn',)
+                        }
+                    }
+                }
+            }
         }
+
+    def show_training_screen(self):
+        self.render('training_menu')
+
+    def show_about_the_game(self):
+        self.render('')
 
     def render(self, type_window: str):
         pygame.mouse.set_visible(True)
@@ -286,4 +306,8 @@ class OnClickFunctions:
 
 
 if __name__ == '__main__':
+    pygame.mixer.init()
+    pygame.mixer.music.load("Stop Watch OST — The Binding"
+                            " of Isaac_ Antibirth Journey from a Jar to the Sky (www.lightaudio.ru).mp3")
+    pygame.mixer.music.play(-1, 0.0)
     game = Game()
