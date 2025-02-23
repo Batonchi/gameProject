@@ -29,29 +29,32 @@ class GetCharacter:
 
 class Character(pygame.sprite.Sprite):
     def __init__(self, character: GetCharacter, tile_width: int = 8, tile_height: int = 8,
-                 speed: Tuple[float, float] = (1, 1)):
+                 speed: Tuple[float, float] = (1, 1), y: int = 0, x: int = 0):
         super().__init__()
         self.character = character
-        # self.emotional_health = self.character.get_info()['emotional_health']
-        # self.image = pygame.image.load(os.path.join('app/view/images/', character.get_name() + '.png'))
-        self.image = pygame.image.load(os.path.join('app/view/images/', character + '.png'))
-        self.y = 475
-        self.x = 425
+        self.emotional_health = self.character.get_info()['emotional_health']
+        self.image = pygame.image.load(os.path.join('app/view/images/', character.get_name() + '.png'))
+        self.y = y
+        self.x = x
         self.image = pygame.transform.scale(self.image, (tile_width, tile_height))
         self.tile_size = tile_width, tile_height
         self.rect = pygame.Rect([self.x, self.y, tile_width, tile_height])
         self.speed = speed
-        # if self.character.get_info()['permissions']:
-        #     self.permissions = character.inf.get('permissions')
-        # else:
-        #     self.permissions = {
-        #         'may_move': False,
-        #         'may_speak': False,
-        #         'may_use_items': False,
-        #         'may_have_backpack': False
-        #     }
-        # if self.permissions['may_have_backpack']:
-        #     self.backpack = BackPack(character.inf.get('backpack_volume') or 10, self)
+        if self.character.get_info()['permissions']:
+            self.permissions = character.inf.get('permissions')
+        else:
+            self.permissions = {
+                'may_move': False,
+                'may_speak': False,
+                'may_use_items': False,
+                'may_have_backpack': False
+            }
+        if self.permissions['may_have_backpack']:
+            self.backpack = BackPack(character.inf.get('backpack_volume') or 10, self)
+        self.is_npc = character.inf.get('_is_npc') or True
+        if self.is_npc:
+            self.dialog = character.inf.get('dialog')
+            self.dialog_link = self.dialog
 
     def move(self, word: str):
         if word == 'up':
@@ -70,14 +73,15 @@ class Character(pygame.sprite.Sprite):
     def get_coors(self) -> tuple:
         return self.x, self.y
 
-    def say(self, phrase: str):
-        pass
-        # if self.active:
-        #     print(self.character_name + ': ' + phrase)
-        # else:
-        #     # здесь надо подумать над тем хотим ли дать персонаджу с которым говорили
-        #     # уникальную фразу для ответа если с ним попиздели
-        #     print(self.character_name + ':' + '')
+    def say(self):
+        words = self.dialog_link['text']
+        self.dialog_link = self.dialog_link.get('next', None)
+        if self.dialog_link is None:
+            self.start_dialog()
+        return words
+
+    def start_dialog(self):
+        self.dialog_link = self.dialog
 
 
 class BackPack:

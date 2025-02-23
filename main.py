@@ -4,9 +4,11 @@ import pygame_widgets
 
 from database import create_database
 from typing import Tuple
+from pygame_widgets.button import Button
+from pygame_widgets.textbox import TextBox
 from app.characters.model import Character
 from app.map.model import Map, PlayerCamera, Doors, KeysDoors
-from pygame_widgets.button import Button
+from app.sessions.service import SessionService
 
 
 create_database()
@@ -41,6 +43,14 @@ class RenderingOtherWindow:
             'inactiveColour': (250, 250, 250),
             'pressedColour': (0, 0, 0),
             'radius': 50,
+        }
+        self.text_box_arguments = {
+            'fontSize': 24,
+            'borderColour': (255, 255, 255),
+            'textColour': (255, 255, 255),
+            'radius': 50,
+            'colour': (0, 0, 0),
+            'borderThickness': 5
         }
         self.arguments_for_buttons = {
             'exit-btn': {
@@ -94,6 +104,14 @@ class RenderingOtherWindow:
             'main_menu': {
                 'background-image': 'app/view/images/for_main_menu.jpg',
                 'caption': 'Меню',
+                'input_text_box': {
+                    1: {
+                        'xy_strat': (self.w_w / 2, self.w_h / 2),
+                        'width_height': (self.w_w // 3, self.w_h // 12),
+                        'placeholderText': 'ник',
+                        'onsubmit': ''
+                    }
+                },
                 'buttons_column_groups': {
                     1: {
                         'xy_start': (self.w_w // 3, self.w_h // 4),
@@ -152,7 +170,6 @@ class RenderingOtherWindow:
             events = pygame.event.get()
             for event in events:
                 if event.type == pygame.QUIT:
-                    show = False
                     quit()
             if background_image:
                 self.screen.blit(background_image, self.base_window_arguments['background-position'])
@@ -194,34 +211,36 @@ class RenderingOtherWindow:
         for button in self.all_buttons:
             button.hide()
         self.all_buttons.clear()
+
         pygame.display.set_caption('Game')
         running = True
         filename_map = 'map_level1.tmx'
         map_game = Map(filename_map, tile_width=game_class.w_w // 100, tile_height=game_class.w_h // 100)
         game_class.screen.fill((34, 35, 35))
         map_game.render(game_class.screen, 0, 0, 100, 100)
-        character = Character('character', tile_width=game_class.w_w // 150, tile_height=game_class.w_h // 75,
-                              speed=(1, 1))
+        player_start_xy = map_game.get_character_xy_by_tile_xy(30, 35)
+        character = Character('character', tile_width=game_class.w_w // 125, tile_height=game_class.w_h // 110,
+                              speed=(2, 2), x=player_start_xy[0], y=player_start_xy[1])
         camera = PlayerCamera(character, 10, 10)
         doors = Doors(map_game.doors, tile_width=self.w_w // 100, tile_height=self.w_h // 100,
                       pairs_doors_rects=map_game.rects_doors)
-        keysdoors = KeysDoors(self.screen, keys=map_game.keys, tile_width=self.w_w // 100, tile_height=self.w_h // 100
-                              )
+        keys_doors = KeysDoors(self.screen, keys=map_game.keys, tile_width=self.w_w // 100, tile_height=self.w_h // 100
+                               )
         while running:
             pygame.mouse.set_visible(False)
             events = pygame.event.get()
             clock = pygame.time.Clock()
             for event in events:
                 if event.type == pygame.QUIT:
-                    running = False
+                    quit()
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_e:
                         result_d = doors.check_rect_in_zone(character.rect)
-                        result_k = keysdoors.check_rect_in_zone(character.rect)
+                        result_k = keys_doors.check_rect_in_zone(character.rect)
                         if result_d[0]:
                             doors.removing_closed_door(result_d[1])
                         if result_k[0]:
-                            keysdoors.add_taken_key(result_k[1])
+                            keys_doors.add_taken_key(result_k[1])
                             # здесь еще нужно дописать, чтобы в инвентарь ключ добавлялся
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
@@ -254,7 +273,7 @@ class RenderingOtherWindow:
             camera.update()
             map_game.update(game_class.screen, camera)
             doors.update(self.screen)
-            keysdoors.update(self.screen)
+            keys_doors.update(self.screen)
             game_class.screen.blit(character.image, (character.x, character.y))
             pygame.event.pump()
             pygame.display.flip()
@@ -269,15 +288,7 @@ class OnClickFunctions:
         pass
 
     @staticmethod
-    def exit_to_menu():
-        pass
-
-    @staticmethod
     def about():
-        pass
-
-    @staticmethod
-    def continue_game():
         pass
 
     @staticmethod

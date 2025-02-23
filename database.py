@@ -15,8 +15,7 @@ def create_database():
     with Connection() as conn:
         cur = conn.cursor()
         cur.execute('''CREATE TABLE IF NOT EXISTS players (
-            player_id INTEGER PRIMARY KEY AUTOINCREMENT,
-            nickname TEXT NOT NULL
+            player_id INTEGER PRIMARY KEY AUTOINCREMENT
         )''')
         cur.execute('''CREATE TABLE IF NOT EXISTS all_activities (
             activity_id INTEGER PRIMARY KEY AUTOINCREMENT,

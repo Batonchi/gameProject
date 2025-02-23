@@ -84,6 +84,9 @@ class Map:
                     screen.blit(pygame.transform.scale(image, (self.tile_width, self.tile_height)),
                                 (self.left + (x * self.tile_width), self.top + (y * self.tile_height)))
 
+    def get_character_xy_by_tile_xy(self, x, y) -> Tuple[int, int]:
+        return int(x * self.tile_width), int(y * self.tile_height)
+
     def update(self, screen, camera: PlayerCamera):
         left_top_point_camera = camera.dx, camera.dy
         right_bottom_point_camera = camera.dx + camera.view_size[0], camera.dy + camera.view_size[1]
