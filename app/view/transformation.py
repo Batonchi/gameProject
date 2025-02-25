@@ -24,9 +24,12 @@ def make_filter():
                     else:
                         pixels[i, j] = 0
             image.save(os.path.join(black_white, file.split('.png')[0] + 'black&white' + '.png'))
-            image.transpose(Image.ROTATE_90).save(os.path.join(path_turn_90, file.split('.png')[0] + 'turn_90' + '.png'))
-            image.transpose(Image.ROTATE_270).save(os.path.join(path_turn_270, file.split('.png')[0] + 'turn_270' + '.png'))
-            image.transpose(Image.ROTATE_180).save(os.path.join(path_turn_180, file.split('.png')[0] + 'turn_180' + '.png'))
+            image.transpose(Image.ROTATE_90).save(os.path.join(path_turn_90,
+                                                               file.split('.png')[0] + 'turn_90' + '.png'))
+            image.transpose(Image.ROTATE_270).save(os.path.join(path_turn_270,
+                                                                file.split('.png')[0] + 'turn_270' + '.png'))
+            image.transpose(Image.ROTATE_180).save(os.path.join(path_turn_180,
+                                                                file.split('.png')[0] + 'turn_180' + '.png'))
 
 
 
