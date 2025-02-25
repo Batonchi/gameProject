@@ -7,7 +7,7 @@ from database import Connection
 class SessionService:
 
     @staticmethod
-    def save(player_id: int):
+    def create(player_id: int):
         with Connection() as conn:
             cur = conn.cursor()
             cur.execute('INSERT INTO sessions player_id VALUES (?)', (player_id,))
