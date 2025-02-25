@@ -1,6 +1,7 @@
 import pygame
 import pygame.camera
 import pygame_widgets
+import random
 
 from database import create_database
 from typing import Tuple
@@ -23,6 +24,11 @@ class Game:
 
         self.screen = pygame.display.set_mode((0, 0), pygame.RESIZABLE)
         pygame.display.set_caption('Game')
+
+        pygame.mixer.init()
+        pygame.mixer.music.load("Stop Watch OST — The Binding"
+                                " of Isaac_ Antibirth Journey from a Jar to the Sky (www.lightaudio.ru).mp3")
+        pygame.mixer.music.play(-1, 0.0)
 
         self.w_w, self.w_h = self.screen.get_size()
 
@@ -55,11 +61,11 @@ class RenderingOtherWindow:
         }
         self.arguments_for_buttons = {
             'exit-btn': {
-                'text': 'выйти из игры',
+                'text': 'Выйти из игры',
                 'onclick': lambda: quit()
             },
             'start_game-btn': {
-                'text': 'начать игру',
+                'text': 'Начать игру',
                 'onclick': lambda: self.render_main_game_window(self.link)
             },
             'back-btn': {
@@ -67,27 +73,27 @@ class RenderingOtherWindow:
                 'onclick': ''
             },
             'continue_game_session-btn': {
-                'text': 'продолжить игру',
+                'text': 'Продолжить игру',
                 'onclick': lambda: self.render_main_game_window(self.link)
             },
             'continue_game-btn': {
-                'text': 'продолжить',
+                'text': 'Продолжить',
                 'onclick': lambda: self.render_main_game_window(self.link)
             },
             'new_game_session-btn': {
-                'text': 'новая игра',
+                'text': 'Новая игра',
                 'onclick': ''
             },
             'about-btn': {
-                'text': 'о игре',
+                'text': 'Об игре',
                 'onclick': lambda: self.show_about_the_game()
             },
             'exit_to_menu-btn': {
-                'text': 'выйти в меню',
+                'text': 'Выйти в меню',
                 'onclick': ''
             },
             'train-btn': {
-                'text': 'обучение',
+                'text': 'Обучение',
                 'onclick': lambda: self.show_training_screen()
             },
             'exit_note-btn': {
@@ -158,7 +164,7 @@ class RenderingOtherWindow:
                 }
             },
             'about_the_game_menu': {
-                'caption': 'О игре',
+                'caption': 'Об игре',
                 'buttons_column_groups': {
                     1: {
                         'xy_start': (self.w_w // 3, self.w_h // 1.3),
@@ -171,6 +177,7 @@ class RenderingOtherWindow:
                 }
             }
         }
+        self.particles = Particles(screen, width=w_w, height=w_h)
 
     def show_training_screen(self):
         self.render('training_menu')
@@ -212,6 +219,8 @@ class RenderingOtherWindow:
                     quit()
             if background_image:
                 self.screen.blit(background_image, self.base_window_arguments['background-position'])
+            self.particles.update()
+            self.particles.render()
             pygame_widgets.update(events)
             pygame.display.update()
             # in func we need return caption_name
@@ -344,9 +353,40 @@ class OnClickFunctions:
         pass
 
 
+class Particles:
+    def __init__(self, screen, width: int, height: int):
+        self.width, self.height = width, height
+        self.screen = screen
+        self.particles = []
+
+    def update(self):
+        particle = {
+            'pos': [
+                random.randint(0, self.width),
+                random.randint(0, self.height)
+            ],
+            'velocity': [
+                random.uniform(-1, 1),
+                random.uniform(-1, 1)
+            ],
+            'life': 128
+
+        }
+        self.particles.append(particle)
+
+        for p in self.particles:
+            p['pos'][0] += p['velocity'][0]
+            p['pos'][1] += p['velocity'][1]
+            p['life'] -= 1
+
+            if p['life'] <= 0:
+                self.particles.remove(p)
+
+    def render(self):
+        for p in self.particles:
+            k = p['life'] / 128
+            pygame.draw.circle(self.screen, (255 * k, 255 * k, 255 * k), p['pos'], 1.5)
+
+
 if __name__ == '__main__':
-    pygame.mixer.init()
-    pygame.mixer.music.load("Stop Watch OST — The Binding"
-                            " of Isaac_ Antibirth Journey from a Jar to the Sky (www.lightaudio.ru).mp3")
-    pygame.mixer.music.play(-1, 0.0)
     game = Game()
