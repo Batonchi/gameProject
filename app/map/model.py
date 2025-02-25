@@ -36,6 +36,7 @@ class Map:
 
         self.walls = []
         self.keys = []
+        self.notes = []
         self.doors = []
 
         self.width = 100
@@ -48,28 +49,34 @@ class Map:
                 floor = self.map.get_tile_image(x, y, 0)
                 doors = self.map.get_tile_image(x, y, 2)
                 key = self.map.get_tile_image(x, y, 3)
+                note = self.map.get_tile_image(x, y, 4)
                 if walls is None:
                     if not (doors is None):
                         image = pygame.image.load(doors[0])
-
                         rect = pygame.Rect([x * self.tile_width, y * self.tile_height,
                                             self.tile_width, self.tile_height])
-
                         self.doors.append(rect)
                         self.rects_doors[str(rect)] = [doors[0].split('/')[-1]]
-
                         screen.blit(pygame.transform.scale(image, (self.tile_width, self.tile_height)),
                                     (self.left + (x * self.tile_width), self.top + (y * self.tile_height)))
+
                     elif key is not None:
 
                         rect = pygame.Rect([x * self.tile_width, y * self.tile_height,
                                             self.tile_width, self.tile_height])
-
                         self.keys.append(rect)
-
                         image = pygame.image.load(key[0])
                         screen.blit(pygame.transform.scale(image, (self.tile_width, self.tile_height)),
                                     (self.left + (x * self.tile_width), self.top + (y * self.tile_height)))
+
+                    elif note is not None:
+                        rect = pygame.Rect([x * self.tile_width, y * self.tile_height,
+                                            self.tile_width, self.tile_height])
+                        self.notes.append(rect)
+                        image = pygame.image.load(note[0])
+                        screen.blit(pygame.transform.scale(image, (self.tile_width, self.tile_height)),
+                                    (self.left + (x * self.tile_width), self.top + (y * self.tile_height)))
+
                     else:
                         if floor is None:
                             continue
@@ -79,7 +86,6 @@ class Map:
                 else:
                     self.walls.append(pygame.Rect([x * self.tile_width, y * self.tile_height,
                                                    self.tile_width, self.tile_height]))
-
                     image = pygame.image.load(walls[0])
                     screen.blit(pygame.transform.scale(image, (self.tile_width, self.tile_height)),
                                 (self.left + (x * self.tile_width), self.top + (y * self.tile_height)))
@@ -132,6 +138,7 @@ class Doors(pygame.sprite.Sprite):
 
         for rect in self.rectangles_doors:
             self.zone_doors_rects.append(pygame.Rect([rect.x - 6, rect.y - 6, rect.w + 10, rect.h + 10]))
+
         self.open_doors = []
         self.pair_doors = {
             'tile_0076.png': 'tile_0034.png',
@@ -191,3 +198,30 @@ class KeysDoors:
                 return [True, zone_key]
         return [False]
 
+
+class Notes:
+    def __init__(self, rects: list, tile_width: int, tile_height: int):
+        self.tile_width, self.tile_height = tile_width, tile_height
+
+        self.rects_notes = rects.copy()
+        self.zone_rects_notes = []
+
+        for rect in self.rects_notes:
+            self.zone_rects_notes.append(pygame.Rect([rect.x - 6, rect.y - 6, rect.w + 10, rect.h + 10]))
+        self.notes_taken = []
+
+    def update(self, screen):
+        for el in self.notes_taken:
+            image = pygame.image.load(os.path.join('app/view/images/', 'tile_0017.png'))
+            screen.blit(pygame.transform.scale(image, (self.tile_width, self.tile_height)), (el.x, el.y))
+
+    def check_rect_in_zone(self, player_rect: pygame.Rect):
+        for zone_note in self.zone_rects_notes:
+            if player_rect.colliderect(zone_note):
+                return [True, zone_note]
+        return [False]
+
+    def add_taken_note(self, rect_zone):
+        for note in self.rects_notes:
+            if note.colliderect(rect_zone):
+                self.notes_taken.append(note)
