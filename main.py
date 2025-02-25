@@ -5,7 +5,7 @@ import pygame_widgets
 from database import create_database
 from typing import Tuple
 from app.characters.model import Character
-from app.map.model import Map, PlayerCamera, Doors, KeysDoors
+from app.map.model import Map, PlayerCamera, Doors, KeysDoors, Notes
 from pygame_widgets.button import Button
 
 
@@ -129,8 +129,21 @@ class RenderingOtherWindow:
                 'caption': 'Обучение/управление',
                 'buttons_column_groups': {
                     1: {
-                        'xy_start': (self.w_w // 3, self.w_h // 2),
-                        'width_height': (self.w_w // 3, self.w_h),
+                        'xy_start': (self.w_w // 3, self.w_h // 1.3),
+                        'width_height': (self.w_w // 3, self.w_h // 12),
+                        'gap': 10,
+                        'buttons': {
+                            1: ('exit_to_menu-btn',)
+                        }
+                    }
+                }
+            },
+            'about_the_game_menu': {
+                'caption': 'О игре',
+                'buttons_column_groups': {
+                    1: {
+                        'xy_start': (self.w_w // 3, self.w_h // 1.3),
+                        'width_height': (self.w_w // 3, self.w_h // 12),
                         'gap': 10,
                         'buttons': {
                             1: ('exit_to_menu-btn',)
@@ -144,10 +157,15 @@ class RenderingOtherWindow:
         self.render('training_menu')
 
     def show_about_the_game(self):
-        self.render('')
+        self.render('about_the_game_menu')
 
     def render(self, type_window: str):
+        for button in self.all_buttons:
+            button.hide()
+        self.all_buttons.clear()
+
         pygame.mouse.set_visible(True)
+
         data = self.types_of_window.get(type_window)
         if data is None:
             return
@@ -225,8 +243,9 @@ class RenderingOtherWindow:
         camera = PlayerCamera(character, 10, 10)
         doors = Doors(map_game.doors, tile_width=self.w_w // 100, tile_height=self.w_h // 100,
                       pairs_doors_rects=map_game.rects_doors)
-        keysdoors = KeysDoors(self.screen, keys=map_game.keys, tile_width=self.w_w // 100, tile_height=self.w_h // 100
+        keys_doors = KeysDoors(self.screen, keys=map_game.keys, tile_width=self.w_w // 100, tile_height=self.w_h // 100
                               )
+        notes = Notes(rects=map_game.notes, tile_width=self.w_w // 100, tile_height=self.w_h // 100)
         while running:
             pygame.mouse.set_visible(False)
             events = pygame.event.get()
@@ -237,12 +256,17 @@ class RenderingOtherWindow:
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_e:
                         result_d = doors.check_rect_in_zone(character.rect)
-                        result_k = keysdoors.check_rect_in_zone(character.rect)
+                        result_k = keys_doors.check_rect_in_zone(character.rect)
+                        result_n = notes.check_rect_in_zone(character.rect)
                         if result_d[0]:
                             doors.removing_closed_door(result_d[1])
                         if result_k[0]:
-                            keysdoors.add_taken_key(result_k[1])
+                            keys_doors.add_taken_key(result_k[1])
                             # здесь еще нужно дописать, чтобы в инвентарь ключ добавлялся
+
+                        if result_n[0]:
+                            notes.add_taken_note(result_n[1])
+
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
                         game_class.render_other_window_handler.render('pause_game')
@@ -272,9 +296,12 @@ class RenderingOtherWindow:
                         character.move('right')
 
             camera.update()
+
             map_game.update(game_class.screen, camera)
             doors.update(self.screen)
-            keysdoors.update(self.screen)
+            keys_doors.update(self.screen)
+            notes.update(self.screen)
+
             game_class.screen.blit(character.image, (character.x, character.y))
             pygame.event.pump()
             pygame.display.flip()
