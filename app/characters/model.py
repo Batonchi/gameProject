@@ -33,7 +33,7 @@ class Character(pygame.sprite.Sprite):
         super().__init__()
         self.character = character
         self.emotional_health = self.character.get_info()['emotional_health']
-        self.image = pygame.image.load(os.path.join('app/view/images/', character.get_name() + '.png'))
+        self.image = pygame.image.load(os.path.join('app/view/images/character.png'))
         self.y = y
         self.x = x
         self.image = pygame.transform.scale(self.image, (tile_width, tile_height))

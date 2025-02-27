@@ -16,3 +16,4 @@ class TextService:
             cur = connection.cursor()
             result = cur.execute('''SELECT * FROM texts WHERE text_id = ?''', (text_id,)).fetchone()
             return GetText(result[0], result[1])
+
