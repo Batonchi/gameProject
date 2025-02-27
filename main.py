@@ -259,7 +259,6 @@ class RenderingOtherWindow:
         for button in self.all_buttons:
             button.hide()
         self.all_buttons.clear()
-
         pygame.display.set_caption('Game')
         running = True
         filename_map = 'map_level1.tmx'
