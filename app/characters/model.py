@@ -33,12 +33,7 @@ class Character(pygame.sprite.Sprite):
         super().__init__()
         self.character = character
         self.emotional_health = self.character.get_info()['emotional_health']
-        self.image = pygame.image.load(os.path.join('app/view/images/', character.get_name() + '.png'))
-        self.image = pygame.image.load(os.path.join('app/view/images/', character + '.png'))
-        self.images = [self.image, pygame.image.load(os.path.join('app/view/images/' + 'tile_0004(2).png'))]
-
-        self.index = 0
-
+        self.image = pygame.image.load(os.path.join('app/view/images/character.png'))
         self.y = y
         self.x = x
         self.image = pygame.transform.scale(self.image, (tile_width, tile_height))
@@ -62,28 +57,18 @@ class Character(pygame.sprite.Sprite):
             self.dialog_link = self.dialog
 
     def move(self, word: str):
-
-        if self.index == 1:
-            self.index = 0
-        else:
-            self.index = 1
-
         if word == 'up':
             self.y += self.speed[1]
             self.rect.move_ip(0, self.speed[1])
-            self.image = self.images[self.index]
         elif word == 'down':
             self.y -= self.speed[1]
             self.rect.move_ip(0, -self.speed[1])
-            self.image = self.images[self.index]
         elif word == 'left':
             self.x -= self.speed[0]
             self.rect.move_ip(-self.speed[0], 0)
-            self.image = self.images[self.index]
         elif word == 'right':
             self.x += self.speed[0]
             self.rect.move_ip(self.speed[0], 0)
-            self.image = self.images[self.index]
 
     def get_coors(self) -> tuple:
         return self.x, self.y
