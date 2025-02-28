@@ -9,12 +9,12 @@ from app.characters.service import CharacterService
 from app.sessions.model import GetSession, GetLevel
 from database import create_database
 from typing import Tuple
-from pygame_widgets.button import Button
 from pygame_widgets.textbox import TextBox
 from app.characters.model import Character, GetCharacter, CreateCharacter
 from app.map.model import Map, PlayerCamera, Doors, KeysDoors, Notes
 from pygame_widgets.button import Button
 from app.sessions.service import SessionService, LevelService
+from app.texts.model import ShowTextContent, GetText
 
 create_database()
 
@@ -113,7 +113,7 @@ class RenderingOtherWindow:
             },
             'exit_to_menu-btn': {
                 'text': 'выйти в меню',
-                'onclick': ''
+                'onclick': lambda: self.return_to_menu()
             },
             'train-btn': {
                 'text': 'обучение',
@@ -216,8 +216,8 @@ class RenderingOtherWindow:
 
     def render(self, type_window: str, param: dict = None):
         self.show = True
-        if type_window != 'pause_game':
-            pygame.mixer.music.load(os.path.abspath(os.path.join('app\\music', 'melody_1.mp3')))
+        if type_window != 'pause_game' and not pygame.mixer.get_busy():
+            pygame.mixer.music.load(os.path.abspath(os.path.join('app\\music', 'melody_3.mp3')))
             pygame.mixer.music.play(-1, 0.0)
         if self.all_inputs:
             for el in self.all_inputs:
@@ -253,7 +253,9 @@ class RenderingOtherWindow:
             self.screen.blit(background_image, self.base_window_arguments['background-position'])
         if param:
             self.all_inputs[0].setText(param.get('player_name'))
+        text = ShowTextContent(GetText(0, '{"text": "huiiiiii"}'), (255, 0, 0), 30, (0, 0, 0), (0, 200))
         while self.show:
+            text.render(self.screen, self.w_w, 200)
             self.returned_errors = [error for error in self.returned_errors if error[1] > 0]
             if self.returned_errors:
                 for i in range(0, len(self.returned_errors)):
@@ -311,7 +313,7 @@ class RenderingOtherWindow:
                       pressedColour=self.base_button_arguments['pressedColour'],
                       radius=self.base_button_arguments['radius'],
                       fontSize=self.base_button_arguments['fontSize'],
-                      margin=self.base_button_arguments['margin'])
+                      margin=self.base_button_arguments['margin'], borderColour=(0, 0, 0), borderThickness=5)
 
     def create_input_box(self, xy_start: Tuple[int, int], width_height: Tuple[int, int], placeholder_text: str,
                          onsubmit: object) -> TextBox:
@@ -337,7 +339,15 @@ class RenderingOtherWindow:
         pygame.display.set_caption('Absolutely Depressive Live')
         running = True
         filename_map = params[1].level_map
-        map_game = Map(filename_map, tile_width=game_class.w_w // 100, tile_height=game_class.w_h // 100)
+        print(filename_map)
+        last_name_sim = filename_map.split('.')[0][-1]
+        w_and_h_for_map = {
+            '1': (100, 100),
+            '2': (100, 95),
+            '3': (90, 80),
+        }
+        map_game = Map(filename_map, tile_width=game_class.w_w // w_and_h_for_map[last_name_sim][0],
+                       tile_height=game_class.w_h // w_and_h_for_map[last_name_sim][1])
         game_class.screen.fill((34, 35, 35))
         map_game.render(game_class.screen, 0, 0, 100, 100)
         player_start_xy = map_game.get_character_xy_by_tile_xy(params[1].player_start_x, params[1].player_start_y)
@@ -437,6 +447,7 @@ class RenderingOtherWindow:
             (self.types_of_window['main_menu']
              ['buttons_column_groups'][1]['buttons'][1]) = ('continue_game_session-btn', True)
             self.render('main_menu', param={'player_name': game_session.player_name})
+        self.render(type_window='main_menu')
 
     def continue_game_show(self):
         self.show = False
