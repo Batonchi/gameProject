@@ -42,6 +42,17 @@ class Map:
         self.width = 100
         self.height = 100
 
+    def init_tile_object(self, x: int, y: int, item, screen: pygame.Surface, type_tile: str):
+        rect = pygame.Rect([x * self.tile_width, y * self.tile_height,
+                            self.tile_width, self.tile_height])
+        if type_tile == 'key':
+            self.keys.append(rect)
+        else:
+            self.notes.append(rect)
+        image = pygame.image.load(item[0])
+        screen.blit(pygame.transform.scale(image, (self.tile_width, self.tile_height)),
+                    (self.left + (x * self.tile_width), self.top + (y * self.tile_height)))
+
     def render(self, screen, x_i: int, y_i: int, width: int, height: int):
         for y in range(y_i, height):
             for x in range(x_i, width):
@@ -61,22 +72,9 @@ class Map:
                                     (self.left + (x * self.tile_width), self.top + (y * self.tile_height)))
 
                     elif key is not None:
-
-                        rect = pygame.Rect([x * self.tile_width, y * self.tile_height,
-                                            self.tile_width, self.tile_height])
-                        self.keys.append(rect)
-                        image = pygame.image.load(key[0])
-                        screen.blit(pygame.transform.scale(image, (self.tile_width, self.tile_height)),
-                                    (self.left + (x * self.tile_width), self.top + (y * self.tile_height)))
-
+                        self.init_tile_object(x, y, key, screen, type_tile='key')
                     elif note is not None:
-                        rect = pygame.Rect([x * self.tile_width, y * self.tile_height,
-                                            self.tile_width, self.tile_height])
-                        self.notes.append(rect)
-                        image = pygame.image.load(note[0])
-                        screen.blit(pygame.transform.scale(image, (self.tile_width, self.tile_height)),
-                                    (self.left + (x * self.tile_width), self.top + (y * self.tile_height)))
-
+                        self.init_tile_object(x, y, note, screen, type_tile='note')
                     else:
                         if floor is None:
                             continue
