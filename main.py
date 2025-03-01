@@ -12,7 +12,7 @@ from typing import Tuple
 from pygame_widgets.button import Button
 from pygame_widgets.textbox import TextBox
 from app.characters.model import Character, GetCharacter, CreateCharacter
-from app.map.model import Map, PlayerCamera, Doors, KeysDoors, Notes
+from app.map.model import Map, PlayerCamera, Doors, KeysDoors, Notes, Interactions
 from pygame_widgets.button import Button
 from app.sessions.service import SessionService, LevelService
 
@@ -350,6 +350,8 @@ class RenderingOtherWindow:
         keys_doors = KeysDoors(self.screen, keys=map_game.keys, tile_width=self.w_w // 100, tile_height=self.w_h // 100
                                )
         notes = Notes(rects=map_game.notes, tile_width=self.w_w // 100, tile_height=self.w_h // 100)
+        interactions = Interactions(rects=map_game.interactions,
+                                    tile_width=self.w_w // 100, tile_height=self.w_h // 100)
         while running:
             pygame.mouse.set_visible(False)
             events = pygame.event.get()
@@ -367,13 +369,20 @@ class RenderingOtherWindow:
                         if result_k[0]:
                             keys_doors.add_taken_key(result_k[1])
                             # здесь еще нужно дописать, чтобы в инвентарь ключ добавлялся
-
                         if result_n[0]:
                             notes.add_taken_note(result_n[1])
-
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
                         game_class.render_other_window_handler.render('pause_game')
+                if event.type == pygame.K_d:
+                    result_i = interactions.check_rect_in_zone(game_model_character.rect)
+                    if result_i[0]:
+                        # вот здесь мы начинаем диалог
+                        pass
+
+            result_i = interactions.check_rect_in_zone(game_model_character.rect)
+            if result_i[0]:
+                interactions.add_active(result_i[1])
             if pygame.key.get_pressed()[pygame.K_w]:
                 rect = pygame.Rect([game_model_character.rect.x,
                                     game_model_character.rect.y - game_model_character.speed[1],
@@ -411,6 +420,7 @@ class RenderingOtherWindow:
             doors.update(self.screen)
             keys_doors.update(self.screen)
             notes.update(self.screen)
+            interactions.update(self.screen)
 
             game_class.screen.blit(game_model_character.image, (game_model_character.x, game_model_character.y))
             pygame.event.pump()

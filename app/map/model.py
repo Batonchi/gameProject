@@ -38,6 +38,7 @@ class Map:
         self.keys = []
         self.notes = []
         self.doors = []
+        self.interactions = []
 
         self.width = 100
         self.height = 100
@@ -81,9 +82,10 @@ class Map:
                     elif interaction is not None:
                         rect = pygame.Rect([x * self.tile_width, y * self.tile_height,
                                             self.tile_width, self.tile_height])
-                        image = pygame.image.load(interaction[0])
-                        screen.blit(pygame.transform.scale(image, (self.tile_width, self.tile_height)),
-                                    (self.left + (x * self.tile_width), self.top + (y * self.tile_height)))
+                        self.interactions.append([interaction[0], rect])
+                        # image = pygame.image.load(interaction[0])
+                        # screen.blit(pygame.transform.scale(image, (self.tile_width, self.tile_height)),
+                        #             (self.left + (x * self.tile_width), self.top + (y * self.tile_height)))
 
                     else:
                         if floor is None:
@@ -242,16 +244,24 @@ class Interactions:
 
         self.rects_interaction = rects.copy()
         self.zone_rects_interaction = []
-
         for rect in self.rects_interaction:
-            self.zone_rects_interaction.append(pygame.Rect([rect.x - 11, rect.y - 11, rect.w + 15, rect.h + 15]))
-        self.notes_taken = []
+            self.zone_rects_interaction.append(pygame.Rect([rect[1].x - 11, rect[1].y - 11,
+                                                            rect[1].w + 20, rect[1].h + 20]))
+        self.active = []
 
-    def update(self):
-        pass
+    def update(self, screen):
+        for el in self.active:
+            image = pygame.image.load(os.path.join('app/view/images/', 'tile_0116.png'))
+            screen.blit(pygame.transform.scale(image, (self.tile_width, self.tile_height)), (el.x, el.y))
 
     def check_rect_in_zone(self, player_rect: pygame.Rect):
         for zone_interaction in self.zone_rects_interaction:
             if player_rect.colliderect(zone_interaction):
                 return [True, zone_interaction]
         return [False]
+
+    def add_active(self, rect_zone):
+        for rect in self.rects_interaction:
+            if rect[1].colliderect(rect_zone):
+                if rect[1] not in self.active:
+                    self.active.append(rect[1])
