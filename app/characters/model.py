@@ -109,3 +109,6 @@ class BackPack:
 
     def do_selected(self):
         pass
+
+    def render(self, screen: pygame.Surface):
+        pass
