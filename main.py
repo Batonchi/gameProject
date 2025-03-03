@@ -1,3 +1,4 @@
+import json
 import os
 import time
 import random
@@ -44,20 +45,26 @@ class Game:
 
         pygame.mixer.init()
 
-        self.screen = pygame.display.set_mode((0, 0), pygame.RESIZABLE)
+        self.screen = pygame.display.set_mode((0, 0), pygame.RESIZABLE, pygame.SRCALPHA)
         pygame.display.set_caption(name)
 
         self.w_w, self.w_h = self.screen.get_size()
 
         self.render_other_window_handler = RenderingOtherWindow(self.screen, int(self.w_w * 1), int(self.w_h * 1), self)
         game_session = SessionService.get_last_session()
+
+        pygame.mixer.music.load(os.path.abspath(os.path.join('app\\music', 'melody_1.mp3')))
+        pygame.mixer.music.play(-1, 0.0)
+
         if game_session is not None:
             (self.render_other_window_handler.types_of_window['main_menu']
              ['buttons_column_groups'][1]['buttons'][1]) = ('continue_game_session-btn', True)
             self.render_other_window_handler.render('main_menu',
-                                                    param={'player_name': game_session.player_name})
+                                                    param={'player_name': game_session.player_name,
+                                                           'title': self.name})
         else:
-            self.render_other_window_handler.render('main_menu')
+            self.render_other_window_handler.render('main_menu',
+                                                    param={'title': self.name})
 
 
 class RenderingOtherWindow:
@@ -68,6 +75,7 @@ class RenderingOtherWindow:
         self.link = link
         self.all_buttons = []
         self.all_inputs = []
+        self.texts = []
         self.returned_errors = []
         self.show = True
         self.base_button_arguments = {
@@ -80,7 +88,7 @@ class RenderingOtherWindow:
         }
         self.base_text_box_arguments = {
             'fontSize': 24,
-            'borderColour': (255, 255, 255),
+            'borderColour': (255, 255, 255, 0.5),
             'textColour': (255, 255, 255),
             'radius': 10,
             'colour': (0, 0, 0),
@@ -136,8 +144,8 @@ class RenderingOtherWindow:
                 'caption': 'Меню',
                 'input_text_box': {
                     1: {
-                        'xy_start': (self.w_w // 3, self.w_h // 4),
-                        'width_height': (self.w_w // 3, self.w_h // 16),
+                        'xy_start': (self.w_w // 4, int(self.w_h * 0.95)),
+                        'width_height': (self.w_w // 2, self.w_h // 18),
                         'placeholderText': 'ник',
                         'onsubmit': None
                     }
@@ -177,7 +185,7 @@ class RenderingOtherWindow:
                 'caption': 'Обучение/управление',
                 'buttons_column_groups': {
                     1: {
-                        'xy_start': (self.w_w // 3, self.w_h // 1.3),
+                        'xy_start': (self.w_w // 3, self.w_h // 1.2),
                         'width_height': (self.w_w // 3, self.w_h // 12),
                         'gap': 10,
                         'buttons': {
@@ -191,7 +199,7 @@ class RenderingOtherWindow:
                 'caption': 'О игре',
                 'buttons_column_groups': {
                     1: {
-                        'xy_start': (self.w_w // 3, self.w_h // 1.3),
+                        'xy_start': (self.w_w // 3, self.w_h // 1.2),
                         'width_height': (self.w_w // 3, self.w_h // 12),
                         'gap': 10,
                         'buttons': {
@@ -217,15 +225,13 @@ class RenderingOtherWindow:
 
     def render(self, type_window: str, param: dict = None):
         self.show = True
-        if type_window != 'pause_game' and not pygame.mixer.get_busy():
-            pygame.mixer.music.load(os.path.abspath(os.path.join('app\\music', 'melody_3.mp3')))
-            pygame.mixer.music.play(-1, 0.0)
         if self.all_inputs:
             for el in self.all_inputs:
                 el.hide()
         if self.all_buttons:
             for el in self.all_buttons:
                 el.hide()
+        self.texts.clear()
         self.all_inputs.clear()
         self.all_buttons.clear()
         pygame.mouse.set_visible(True)
@@ -245,6 +251,8 @@ class RenderingOtherWindow:
                                                              input_text_box_parameter['width_height'],
                                                              input_text_box_parameter['onsubmit'],
                                                              input_text_box_parameter['placeholderText']))
+        if type_window == 'pause_game':
+            self.all_buttons[1].onClick = lambda: self.return_to_menu(from_pause=True)
         background_color = self.base_window_arguments['background-color']
         background_image = False
         if data.get('background-image'):
@@ -253,13 +261,17 @@ class RenderingOtherWindow:
                                                       self.base_window_arguments['background-size'])
             self.screen.blit(background_image, self.base_window_arguments['background-position'])
         if param:
-            self.all_inputs[0].setText(param.get('player_name'))
-        text = ShowTextContent(GetText(0, '{"text": "Absolutely Depressive Live"}'),
-                               (255, 255, 255), 90,
-                               (0, 0, 0, 0.3), (self.w_w // 3.5, self.w_h // 6),
-                               padding=(10, 10, 10, 10), border_radius=10)
+            if param.get('player_name'):
+                self.all_inputs[0].setText(param.get('player_name'))
+            if param.get('title'):
+                pygame.display.set_caption(param.get('title')[0])
+                self.texts.append((ShowTextContent(GetText(0, json.dumps({'text': param.get('title')})),
+                                                   (0, 0, 0), 128,
+                                                   (200, 200, 200), (self.w_w // 4.9, self.w_h // 6),
+                                                   padding=(10, 10, 10, 10), border_radius=10), 'inline'))
+        if self.texts:
+            self.texts[-1][0].image.set_alpha(100)
         while self.show:
-            text.render(self.screen, self.w_w, 200)
             self.returned_errors = [error for error in self.returned_errors if error[1] > 0]
             if self.returned_errors:
                 for i in range(0, len(self.returned_errors)):
@@ -275,10 +287,13 @@ class RenderingOtherWindow:
             if background_image:
                 self.screen.blit(background_image, self.base_window_arguments['background-position'])
                 self.check_errors()
-            text.draw_rect_frame_in_full_line(self.screen, self.w_w)
-            text.render(self.screen)
+            if self.texts:
+                for text in self.texts:
+                    if text[1] == 'inline':
+                        text[0].draw_rect_frame_in_full_line(self.screen, 50, self.w_w)
+                    text[0].render(self.screen)
             self.particles.update()
-            self.particles.render()
+            self.particles.render((255, 0, 0) if type_window != 'pause_game' else (255, 255, 255))
             pygame_widgets.update(events)
             pygame.display.update()
 
@@ -293,11 +308,13 @@ class RenderingOtherWindow:
                 pos_decrease += 1
                 continue
             if type_group == 'column':
-                res_buttons.append(self.create_button(position - pos_decrease, button[0],
-                                                      width, height, gap, x_y_start, 'y'))
+                button = self.create_button(position - pos_decrease, button[0],
+                                            width, height, gap, x_y_start, 'y')
+                res_buttons.append(button)
             else:
-                res_buttons.append(self.create_button(position - pos_decrease, button[0],
-                                                      width, height, gap, x_y_start, 'x'))
+                button = self.create_button(position - pos_decrease, button[0],
+                                            width, height, gap, x_y_start, 'x')
+                res_buttons.append(button)
         return res_buttons
 
     def create_button(self, position: int, name_button: str, width: int, height: int,
@@ -319,7 +336,7 @@ class RenderingOtherWindow:
                       pressedColour=self.base_button_arguments['pressedColour'],
                       radius=self.base_button_arguments['radius'],
                       fontSize=self.base_button_arguments['fontSize'],
-                      margin=self.base_button_arguments['margin'], borderColour=(0, 0, 0), borderThickness=5)
+                      margin=self.base_button_arguments['margin'], borderColour=(155, 155, 155), borderThickness=5)
 
     def create_input_box(self, xy_start: Tuple[int, int], width_height: Tuple[int, int], placeholder_text: str,
                          onsubmit: object) -> TextBox:
@@ -345,38 +362,48 @@ class RenderingOtherWindow:
         pygame.display.set_caption('Absolutely Depressive Live')
         running = True
         filename_map = params[1].level_map
-        print(filename_map)
         last_name_sim = filename_map.split('.')[0][-1]
         w_and_h_for_map = {
             '1': (100, 100),
-            '2': (100, 95),
-            '3': (90, 80),
+            '2': (67, 70),
+            '3': (64, 70),
+        }
+        player_w_and_h = {
+            '1': '',
+            '2': (game_class.w_w // 80, game_class.w_h // 70),
+            '3': ''
         }
         map_game = Map(filename_map, tile_width=game_class.w_w // w_and_h_for_map[last_name_sim][0],
                        tile_height=game_class.w_h // w_and_h_for_map[last_name_sim][1])
         game_class.screen.fill((34, 35, 35))
         map_game.render(game_class.screen, 0, 0, 100, 100)
         player_start_xy = map_game.get_character_xy_by_tile_xy(params[1].player_start_x, params[1].player_start_y)
-        game_model_character = Character(character=params[2], speed=(1, 1), x=player_start_xy[0],
-                                         y=player_start_xy[1], tile_width=game_class.w_w // 125,
-                                         tile_height=game_class.w_h // 110)
+        game_model_character = Character(character=params[2], speed=(self.w_w // 450, self.w_h // 450), x=player_start_xy[0],
+                                         y=player_start_xy[1], tile_width=player_w_and_h[last_name_sim][0],
+                                         tile_height=player_w_and_h[last_name_sim][1])
         backpack = BackPack(10, game_model_character)
         camera = PlayerCamera(game_model_character, 10, 10)
-        doors = Doors(map_game.doors, tile_width=self.w_w // 100, tile_height=self.w_h // 100,
+        doors = Doors(map_game.doors, tile_width=player_w_and_h[last_name_sim][0],
+                      tile_height=player_w_and_h[last_name_sim][1],
                       pairs_doors_rects=map_game.rects_doors)
-        keys_doors = KeysDoors(self.screen, keys=map_game.keys, tile_width=self.w_w // 100, tile_height=self.w_h // 100
+        keys_doors = KeysDoors(self.screen, keys=map_game.keys, tile_width=player_w_and_h[last_name_sim][0],
+                               tile_height=player_w_and_h[last_name_sim][1]
                                )
-        notes = Notes(rects=map_game.notes, tile_width=self.w_w // 100, tile_height=self.w_h // 100)
+        notes = Notes(rects=map_game.notes, tile_width=player_w_and_h[last_name_sim][0],
+                      tile_height=player_w_and_h[last_name_sim][0])
         interactions = Interactions(rects=map_game.interactions,
-                                    tile_width=self.w_w // 100, tile_height=self.w_h // 100)
+                                    tile_width=player_w_and_h[last_name_sim][0],
+                                    tile_height=player_w_and_h[last_name_sim][1])
         while running:
             pygame.mouse.set_visible(False)
             events = pygame.event.get()
             clock = pygame.time.Clock()
-            backpack.render(self.screen, self.w_w, self.w_h)
+            # backpack.render(self.screen, self.w_w, self.w_h)
             for event in events:
                 if event.type == pygame.QUIT:
                     quit()
+                if event.type == pygame.KEYUP:
+                    game_model_character.image = game_model_character.images[0]
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_e:
                         # локальные переменные, проверяем находится ли игрок в какой-либо зоне
@@ -393,13 +420,12 @@ class RenderingOtherWindow:
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:  # Для меню паузы
                         game_class.render_other_window_handler.render('pause_game')
-                if event.type == pygame.K_d:
-                    result_i = interactions.check_rect_in_zone(game_model_character.rect)
-                    if result_i[0]:
-
-                        # вот здесь мы начинаем диалог с нпс или комментарий ГГ
-                        pass
-
+            #     if event.type == pygame.K_f:
+            #         result_i = interactions.check_rect_in_zone(game_model_character.rect)
+            #         if result_i[0]:
+            #             # вот здесь мы начинаем диалог с нпс или комментарий ГГ
+            #             pass
+            #
             result_i = interactions.check_rect_in_zone(game_model_character.rect)  # если игрок заходит в зону "события"
             # Добавляем это событие/взаимодействие в список активных. После обновляем
             if result_i[0]:
@@ -471,13 +497,18 @@ class RenderingOtherWindow:
                 return
         self.render_level_map_with_param(self.link, result)
 
-    def return_to_menu(self):
+    def return_to_menu(self, from_pause: bool = False):
         game_session = SessionService.get_last_session()
+        if pygame.mixer.music.get_busy() and from_pause:
+            pygame.mixer.music.load(os.path.abspath(os.path.join('app\\music', 'melody_3.mp3')))
+            pygame.mixer.music.play(-1, 0.0)
+        print(pygame.display.get_caption())
         if game_session is not None:
             (self.types_of_window['main_menu']
              ['buttons_column_groups'][1]['buttons'][1]) = ('continue_game_session-btn', True)
-            self.render('main_menu', param={'player_name': game_session.player_name})
-        self.render(type_window='main_menu')
+            self.render('main_menu', param={'player_name': game_session.player_name,
+                                            'title': 'Absolutely Depressive Live'})
+        self.render(type_window='main_menu', param={'title': 'Absolutely Depressive Live'})
 
     def continue_game_show(self):
         self.show = False
@@ -525,15 +556,6 @@ class OnClickFunctions:
         get_level = LevelService.get_level_by_id(get_session.level_id)
         return get_session, get_level, get_character
 
-    @staticmethod
-    def hover_button():
-        pygame.mixer.music.load(os.path.abspath(os.path.join('app\\music', 'melody_4.mp3')))
-        pygame.mixer.music.play(-1, 0.0)
-        pygame.mixer.music.load(os.path.abspath(os.path.join('app\\music', 'took_took.mp3')))
-        pygame.mixer.music.play(-1, 0.0)
-        time.sleep(1)
-        pygame.mixer.music.stop()
-
 
 class Particles:  # класс частиц
     def __init__(self, screen, width: int, height: int):
@@ -566,10 +588,10 @@ class Particles:  # класс частиц
             if p['life'] <= 0:
                 self.particles.remove(p)
 
-    def render(self):   # отрисовка
+    def render(self, color):  # отрисовка
         for p in self.particles:
             k = p['life'] / 128  # коэффициент, для того чтобы менять цвет.
-            pygame.draw.circle(self.screen, (255 * k, 0 * k, 0 * k), p['pos'], 2)
+            pygame.draw.circle(self.screen, (color[0] * k, color[1] * k, color[2] * k), p['pos'], 2)
 
 
 if __name__ == '__main__':

@@ -38,6 +38,12 @@ class Character(pygame.sprite.Sprite):
         self.y = y
         self.x = x
         self.image = pygame.transform.scale(self.image, (tile_width, tile_height))
+        image2 = pygame.image.load(os.path.join('app/view/images/' + 'tile_0004(2).png'))
+        image2 = pygame.transform.scale(image2, (tile_width, tile_height))
+        image3 = pygame.image.load(os.path.join('app/view/images/' + 'tile_0010(4).png'))
+        image3 = pygame.transform.scale(image3, (tile_width, tile_height))
+        self.images = [self.image, image2, image3]
+        self.index = 0
         self.tile_size = tile_width, tile_height
         self.rect = pygame.Rect([self.x, self.y, tile_width, tile_height])
         self.speed = speed
@@ -61,15 +67,20 @@ class Character(pygame.sprite.Sprite):
         if word == 'up':
             self.y += self.speed[1]
             self.rect.move_ip(0, self.speed[1])
+            self.index = 0
         elif word == 'down':
             self.y -= self.speed[1]
             self.rect.move_ip(0, -self.speed[1])
+            self.index = 0
         elif word == 'left':
             self.x -= self.speed[0]
             self.rect.move_ip(-self.speed[0], 0)
+            self.index = 2
         elif word == 'right':
             self.x += self.speed[0]
             self.rect.move_ip(self.speed[0], 0)
+            self.index = 1
+        self.image = self.images[self.index]
 
     def get_coors(self) -> tuple:
         return self.x, self.y

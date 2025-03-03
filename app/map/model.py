@@ -56,10 +56,10 @@ class Map:
             self.notes.append(rect)
         else:
             self.interactions.append(rect)
-
-        image = pygame.image.load(item[0])
-        screen.blit(pygame.transform.scale(image, (self.tile_width, self.tile_height)),
-                    (self.left + (x * self.tile_width), self.top + (y * self.tile_height)))
+        if item:
+            image = pygame.image.load(item[0])
+            screen.blit(pygame.transform.scale(image, (self.tile_width, self.tile_height)),
+                        (self.left + (x * self.tile_width), self.top + (y * self.tile_height)))
 
     def render(self, screen, x_i: int, y_i: int, width: int, height: int):
         for y in range(y_i, height):
@@ -84,7 +84,11 @@ class Map:
                                     (self.left + (x * self.tile_width), self.top + (y * self.tile_height)))
 
                     elif key is not None:
-                        self.init_tile_object(x, y, key, screen, type_tile='key')
+                        self.keys.append(pygame.Rect([x * self.tile_width, y * self.tile_height, self.tile_width,
+                                                      self.tile_height]))
+                        screen.blit(pygame.transform.scale(pygame.image.load(key[0]),
+                                                           (self.tile_width, self.tile_height)),
+                                    (self.left + (x * self.tile_width), self.top + (y * self.tile_height)))
                     elif note is not None:
                         self.init_tile_object(x, y, note, screen, type_tile='note')
                     elif interaction is not None:
@@ -224,8 +228,8 @@ class KeysDoors:
 
 
 class Notes:
-    def __init__(self, text: GetText, rects: list, tile_width: int, tile_height: int):
-        self.text = text
+    def __init__(self, rects: list, tile_width: int, tile_height: int):
+        # self.text = text
         self.tile_width, self.tile_height = tile_width, tile_height
 
         self.rects_notes = rects.copy()
@@ -261,10 +265,11 @@ class Interactions:  # это класс особых "событий", кото
         self.tile_width, self.tile_height = tile_width, tile_height
 
         self.rects_interaction = rects.copy()
+        print(self.rects_interaction)
         self.zone_rects_interaction = []  # список, зона прямоугольников (взаимодействий/событий)
         for rect in self.rects_interaction:
-            self.zone_rects_interaction.append(pygame.Rect([rect[1].x - 11, rect[1].y - 11,
-                                                            rect[1].w + 20, rect[1].h + 20]))
+            self.zone_rects_interaction.append(pygame.Rect([rect.x - 11, rect.y - 11,
+                                                            rect.w + 20, rect.h + 20]))
         self.active = []
 
     def update(self, screen):
@@ -282,6 +287,6 @@ class Interactions:  # это класс особых "событий", кото
 
     def add_active(self, rect_zone):  # если игрок хотя бы один раз зашел в зону "события", добавляем в список
         for rect in self.rects_interaction:
-            if rect[1].colliderect(rect_zone):
-                if rect[1] not in self.active:
-                    self.active.append(rect[1])
+            if rect.colliderect(rect_zone):
+                if rect not in self.active:
+                    self.active.append(rect)
