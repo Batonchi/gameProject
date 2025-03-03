@@ -10,7 +10,7 @@ from app.sessions.model import GetSession, GetLevel
 from database import create_database
 from typing import Tuple
 from pygame_widgets.textbox import TextBox
-from app.characters.model import Character, GetCharacter, CreateCharacter
+from app.characters.model import Character, GetCharacter, CreateCharacter, BackPack
 from app.map.model import Map, PlayerCamera, Doors, KeysDoors, Notes
 from pygame_widgets.button import Button
 from app.sessions.service import SessionService, LevelService
@@ -76,13 +76,13 @@ class RenderingOtherWindow:
             'margin': 20,
             'inactiveColour': (250, 250, 250),
             'pressedColour': (0, 0, 0),
-            'radius': 50,
+            'radius': 10,
         }
         self.base_text_box_arguments = {
             'fontSize': 24,
             'borderColour': (255, 255, 255),
             'textColour': (255, 255, 255),
-            'radius': 20,
+            'radius': 10,
             'colour': (0, 0, 0),
             'borderThickness': 1
         }
@@ -136,8 +136,8 @@ class RenderingOtherWindow:
                 'caption': 'Меню',
                 'input_text_box': {
                     1: {
-                        'xy_start': (self.w_w / 2.7, self.w_h / 3.7),
-                        'width_height': (self.w_w // 4, self.w_h // 16),
+                        'xy_start': (self.w_w // 3, self.w_h // 4),
+                        'width_height': (self.w_w // 3, self.w_h // 16),
                         'placeholderText': 'ник',
                         'onsubmit': None
                     }
@@ -253,9 +253,11 @@ class RenderingOtherWindow:
             self.screen.blit(background_image, self.base_window_arguments['background-position'])
         if param:
             self.all_inputs[0].setText(param.get('player_name'))
-        text = ShowTextContent(GetText(0, '{"text": "huiiiiii"}'), (255, 0, 0), 30, (0, 0, 0), (0, 200))
+        text = ShowTextContent(GetText(0, '{"text": "Absolutely Depressive Live"}'),
+                               (255, 255, 255), 90,
+                               (0, 0, 0, 0.3), (self.w_w // 3.5, self.w_h // 6),
+                               padding=(10, 10, 10, 10), border_radius=10)
         while self.show:
-            text.render(self.screen, self.w_w, 200)
             self.returned_errors = [error for error in self.returned_errors if error[1] > 0]
             if self.returned_errors:
                 for i in range(0, len(self.returned_errors)):
@@ -271,6 +273,8 @@ class RenderingOtherWindow:
             if background_image:
                 self.screen.blit(background_image, self.base_window_arguments['background-position'])
                 self.check_errors()
+            text.draw_rect_frame_in_full_line(self.screen, self.w_w)
+            text.render(self.screen)
             self.particles.update()
             self.particles.render()
             pygame_widgets.update(events)
@@ -339,7 +343,6 @@ class RenderingOtherWindow:
         pygame.display.set_caption('Absolutely Depressive Live')
         running = True
         filename_map = params[1].level_map
-        print(filename_map)
         last_name_sim = filename_map.split('.')[0][-1]
         w_and_h_for_map = {
             '1': (100, 100),
@@ -354,16 +357,18 @@ class RenderingOtherWindow:
         game_model_character = Character(character=params[2], speed=(1, 1), x=player_start_xy[0],
                                          y=player_start_xy[1], tile_width=game_class.w_w // 125,
                                          tile_height=game_class.w_h // 110)
+        backpack = BackPack(10, game_model_character)
         camera = PlayerCamera(game_model_character, 10, 10)
         doors = Doors(map_game.doors, tile_width=self.w_w // 100, tile_height=self.w_h // 100,
                       pairs_doors_rects=map_game.rects_doors)
         keys_doors = KeysDoors(self.screen, keys=map_game.keys, tile_width=self.w_w // 100, tile_height=self.w_h // 100
                                )
-        notes = Notes(rects=map_game.notes, tile_width=self.w_w // 100, tile_height=self.w_h // 100)
+        # notes = Notes(rects=map_game.notes, tile_width=self.w_w // 100, tile_height=self.w_h // 100)
         while running:
             pygame.mouse.set_visible(False)
             events = pygame.event.get()
             clock = pygame.time.Clock()
+            backpack.render(self.screen, self.w_w, self.w_h)
             for event in events:
                 if event.type == pygame.QUIT:
                     quit()
@@ -416,12 +421,11 @@ class RenderingOtherWindow:
                         game_model_character.move('right')
 
             camera.update()
-
             map_game.update(game_class.screen, camera)
             doors.update(self.screen)
             keys_doors.update(self.screen)
-            notes.update(self.screen)
-
+            # notes.update(self.screen)
+            pygame_widgets.update(events)
             game_class.screen.blit(game_model_character.image, (game_model_character.x, game_model_character.y))
             pygame.event.pump()
             pygame.display.flip()

@@ -3,6 +3,7 @@ from typing import Tuple
 import pytmx.util_pygame
 import pygame
 import os
+from app.texts.model import ShowTextContent, GetText
 import app.characters.model
 
 
@@ -198,7 +199,8 @@ class KeysDoors:
 
 
 class Notes:
-    def __init__(self, rects: list, tile_width: int, tile_height: int):
+    def __init__(self, text: GetText, rects: list, tile_width: int, tile_height: int):
+        self.text = text
         self.tile_width, self.tile_height = tile_width, tile_height
 
         self.rects_notes = rects.copy()
@@ -223,3 +225,5 @@ class Notes:
         for note in self.rects_notes:
             if note.colliderect(rect_zone):
                 self.notes_taken.append(note)
+
+

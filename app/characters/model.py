@@ -4,6 +4,7 @@ import json
 
 from typing import Tuple
 from app.items.model import GetItem
+from pygame_widgets.button import Button
 
 
 class CreateCharacter:
@@ -90,6 +91,7 @@ class BackPack:
         self.volume = volume
         self.character = character
         self.rest = [None for _ in range(self.volume)]
+        self.cells = []
 
     def add(self, item: GetItem):
         self.rest.append(item)
@@ -110,5 +112,11 @@ class BackPack:
     def do_selected(self):
         pass
 
-    def render(self, screen: pygame.Surface):
-        pass
+    def render(self, screen: pygame.Surface, w_width: int, w_height: int):
+        gap = 10
+        width_cell, height_cell = (w_width - (self.volume * 10) // self.volume, w_height // 20)
+        for i in range(0, self.volume):
+            self.cells.append(Button(screen, i * width_cell + gap, w_height - height_cell, width_cell,
+                                     height_cell, colour=(0, 0, 0), borderColour=(255, 255, 255), radius=10,
+                                     borderThickness=10))
+
