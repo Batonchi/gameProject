@@ -173,7 +173,7 @@ class RenderingOtherWindow:
                 }
             },
             'training_menu': {
-                'background-image': 'app/view/images/training.png',
+                'background-image': 'app/view/images/training.jpg',
                 'caption': 'Обучение/управление',
                 'buttons_column_groups': {
                     1: {
@@ -187,6 +187,7 @@ class RenderingOtherWindow:
                 }
             },
             'about_the_game_menu': {
+                'background-image': 'app/view/images/about_the_game.jpg',
                 'caption': 'О игре',
                 'buttons_column_groups': {
                     1: {
@@ -405,7 +406,7 @@ class RenderingOtherWindow:
                 rect = pygame.Rect([game_model_character.rect.x,
                                     game_model_character.rect.y - game_model_character.speed[1],
                                     game_model_character.rect.w,
-                                    game_model_character.rect.h])  # тот самый прямоугольник на +скорость по y
+                                    game_model_character.rect.h])
                 if not map_game.collide_with_walls(rect):  # проверяем на столкновения со стенами
                     if not doors.collide_with_doors(rect):  # проверяем на столкновения с дверьми
                         game_model_character.move('down')
@@ -414,22 +415,22 @@ class RenderingOtherWindow:
                                     game_model_character.rect.y + game_model_character.speed[1],
                                     game_model_character.rect.w,
                                     game_model_character.rect.h])
-                if not map_game.collide_with_walls(rect):
-                    if not doors.collide_with_doors(rect):
+                if not map_game.collide_with_walls(rect):  # проверяем на столкновения со стенами
+                    if not doors.collide_with_doors(rect):  # проверяем на столкновения с дверьми
                         game_model_character.move('up')
             if pygame.key.get_pressed()[pygame.K_a]:
                 rect = pygame.Rect([game_model_character.rect.x - game_model_character.speed[0],
                                     game_model_character.rect.y, game_model_character.rect.w,
                                     game_model_character.rect.h])
-                if not map_game.collide_with_walls(rect):
-                    if not doors.collide_with_doors(rect):
+                if not map_game.collide_with_walls(rect):  # проверяем на столкновения со стенами
+                    if not doors.collide_with_doors(rect):  # проверяем на столкновения с дверьми
                         game_model_character.move('left')
             if pygame.key.get_pressed()[pygame.K_d]:
                 rect = pygame.Rect([game_model_character.rect.x + game_model_character.speed[0],
                                     game_model_character.rect.y, game_model_character.rect.w,
                                     game_model_character.rect.h])
-                if not map_game.collide_with_walls(rect):
-                    if not doors.collide_with_doors(rect):
+                if not map_game.collide_with_walls(rect):  # проверяем на столкновения со стенами
+                    if not doors.collide_with_doors(rect):  # проверяем на столкновения с дверьми
                         game_model_character.move('right')
 
             # различные апдейты, по названию все понятно
@@ -528,7 +529,7 @@ class Particles:  # класс частиц
     def __init__(self, screen, width: int, height: int):
         self.width, self.height = width, height
         self.screen = screen
-        self.particles = []
+        self.particles = []  # список всех живых частиц, которые будут отрисовываться
 
     def update(self):
         # создаем частицу, которая имеет свою позицию (рандомную), скорость и жизнь (жизнь нужна для затухания частицы)
@@ -558,7 +559,7 @@ class Particles:  # класс частиц
     def render(self):   # отрисовка
         for p in self.particles:
             k = p['life'] / 128  # коэффициент, для того чтобы менять цвет.
-            pygame.draw.circle(self.screen, (255 * k, 255 * k, 255 * k), p['pos'], 3)
+            pygame.draw.circle(self.screen, (255 * k, 0 * k, 0 * k), p['pos'], 2)
 
 
 if __name__ == '__main__':
