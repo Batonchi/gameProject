@@ -11,7 +11,7 @@ from database import create_database
 from typing import Tuple
 from pygame_widgets.textbox import TextBox
 from app.characters.model import Character, GetCharacter, CreateCharacter, BackPack
-from app.map.model import Map, PlayerCamera, Doors, KeysDoors, Notes
+from app.map.model import Map, PlayerCamera, Doors, KeysDoors, Notes, Interactions
 from pygame_widgets.button import Button
 from app.sessions.service import SessionService, LevelService
 from app.texts.model import ShowTextContent, GetText
@@ -173,7 +173,7 @@ class RenderingOtherWindow:
                 }
             },
             'training_menu': {
-                'background-image': 'app/view/images/training.png',
+                'background-image': 'app/view/images/training.jpg',
                 'caption': 'Обучение/управление',
                 'buttons_column_groups': {
                     1: {
@@ -187,6 +187,7 @@ class RenderingOtherWindow:
                 }
             },
             'about_the_game_menu': {
+                'background-image': 'app/view/images/about_the_game.jpg',
                 'caption': 'О игре',
                 'buttons_column_groups': {
                     1: {
@@ -258,6 +259,7 @@ class RenderingOtherWindow:
                                (0, 0, 0, 0.3), (self.w_w // 3.5, self.w_h // 6),
                                padding=(10, 10, 10, 10), border_radius=10)
         while self.show:
+            text.render(self.screen, self.w_w, 200)
             self.returned_errors = [error for error in self.returned_errors if error[1] > 0]
             if self.returned_errors:
                 for i in range(0, len(self.returned_errors)):
@@ -343,6 +345,7 @@ class RenderingOtherWindow:
         pygame.display.set_caption('Absolutely Depressive Live')
         running = True
         filename_map = params[1].level_map
+        print(filename_map)
         last_name_sim = filename_map.split('.')[0][-1]
         w_and_h_for_map = {
             '1': (100, 100),
@@ -363,7 +366,9 @@ class RenderingOtherWindow:
                       pairs_doors_rects=map_game.rects_doors)
         keys_doors = KeysDoors(self.screen, keys=map_game.keys, tile_width=self.w_w // 100, tile_height=self.w_h // 100
                                )
-        # notes = Notes(rects=map_game.notes, tile_width=self.w_w // 100, tile_height=self.w_h // 100)
+        notes = Notes(rects=map_game.notes, tile_width=self.w_w // 100, tile_height=self.w_h // 100)
+        interactions = Interactions(rects=map_game.interactions,
+                                    tile_width=self.w_w // 100, tile_height=self.w_h // 100)
         while running:
             pygame.mouse.set_visible(False)
             events = pygame.event.get()
@@ -374,56 +379,77 @@ class RenderingOtherWindow:
                     quit()
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_e:
+                        # локальные переменные, проверяем находится ли игрок в какой-либо зоне
                         result_d = doors.check_rect_in_zone(game_model_character.rect)
                         result_k = keys_doors.check_rect_in_zone(game_model_character.rect)
                         result_n = notes.check_rect_in_zone(game_model_character.rect)
                         if result_d[0]:
-                            doors.removing_closed_door(result_d[1])
+                            doors.removing_closed_door(result_d[1])  # если True, удаляем дверь
                         if result_k[0]:
-                            keys_doors.add_taken_key(result_k[1])
+                            keys_doors.add_taken_key(result_k[1])  # если True, добавляем подобранный ключ в список
                             # здесь еще нужно дописать, чтобы в инвентарь ключ добавлялся
-
                         if result_n[0]:
-                            notes.add_taken_note(result_n[1])
-
+                            notes.add_taken_note(result_n[1])  # если True, добавляем подобранную записку в список
                 if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_ESCAPE:
+                    if event.key == pygame.K_ESCAPE:  # Для меню паузы
                         game_class.render_other_window_handler.render('pause_game')
+                if event.type == pygame.K_d:
+                    result_i = interactions.check_rect_in_zone(game_model_character.rect)
+                    if result_i[0]:
+
+                        # вот здесь мы начинаем диалог с нпс или комментарий ГГ
+                        pass
+
+            result_i = interactions.check_rect_in_zone(game_model_character.rect)  # если игрок заходит в зону "события"
+            # Добавляем это событие/взаимодействие в список активных. После обновляем
+            if result_i[0]:
+                interactions.add_active(result_i[1])
+
+            # Движение игрока нажатием клавиш WASD
+            # Получаем прямоугольник на +-скорость, чтобы проверить коллайд со стенами или дверьми, если игрок сталкива-
+            # ется с чем либо, он не перемещается на определенное направление (WASD)
+
+            # скорость игрока = (1, 1) (скорость для x и для y)
             if pygame.key.get_pressed()[pygame.K_w]:
                 rect = pygame.Rect([game_model_character.rect.x,
                                     game_model_character.rect.y - game_model_character.speed[1],
                                     game_model_character.rect.w,
                                     game_model_character.rect.h])
-                if not map_game.collide_with_walls(rect):
-                    if not doors.collide_with_doors(rect):
+                if not map_game.collide_with_walls(rect):  # проверяем на столкновения со стенами
+                    if not doors.collide_with_doors(rect):  # проверяем на столкновения с дверьми
                         game_model_character.move('down')
             if pygame.key.get_pressed()[pygame.K_s]:
                 rect = pygame.Rect([game_model_character.rect.x,
                                     game_model_character.rect.y + game_model_character.speed[1],
                                     game_model_character.rect.w,
                                     game_model_character.rect.h])
-                if not map_game.collide_with_walls(rect):
-                    if not doors.collide_with_doors(rect):
+                if not map_game.collide_with_walls(rect):  # проверяем на столкновения со стенами
+                    if not doors.collide_with_doors(rect):  # проверяем на столкновения с дверьми
                         game_model_character.move('up')
             if pygame.key.get_pressed()[pygame.K_a]:
                 rect = pygame.Rect([game_model_character.rect.x - game_model_character.speed[0],
                                     game_model_character.rect.y, game_model_character.rect.w,
                                     game_model_character.rect.h])
-                if not map_game.collide_with_walls(rect):
-                    if not doors.collide_with_doors(rect):
+                if not map_game.collide_with_walls(rect):  # проверяем на столкновения со стенами
+                    if not doors.collide_with_doors(rect):  # проверяем на столкновения с дверьми
                         game_model_character.move('left')
             if pygame.key.get_pressed()[pygame.K_d]:
                 rect = pygame.Rect([game_model_character.rect.x + game_model_character.speed[0],
                                     game_model_character.rect.y, game_model_character.rect.w,
                                     game_model_character.rect.h])
-                if not map_game.collide_with_walls(rect):
-                    if not doors.collide_with_doors(rect):
+                if not map_game.collide_with_walls(rect):  # проверяем на столкновения со стенами
+                    if not doors.collide_with_doors(rect):  # проверяем на столкновения с дверьми
                         game_model_character.move('right')
 
+            # различные апдейты, по названию все понятно
             camera.update()
+
             map_game.update(game_class.screen, camera)
             doors.update(self.screen)
             keys_doors.update(self.screen)
+            notes.update(self.screen)
+            interactions.update(self.screen)
+
             # notes.update(self.screen)
             pygame_widgets.update(events)
             game_class.screen.blit(game_model_character.image, (game_model_character.x, game_model_character.y))
@@ -509,13 +535,14 @@ class OnClickFunctions:
         pygame.mixer.music.stop()
 
 
-class Particles:
+class Particles:  # класс частиц
     def __init__(self, screen, width: int, height: int):
         self.width, self.height = width, height
         self.screen = screen
-        self.particles = []
+        self.particles = []  # список всех живых частиц, которые будут отрисовываться
 
     def update(self):
+        # создаем частицу, которая имеет свою позицию (рандомную), скорость и жизнь (жизнь нужна для затухания частицы)
         particle = {
             'pos': [
                 random.randint(0, self.width),
@@ -528,9 +555,10 @@ class Particles:
             'life': 128
 
         }
-        self.particles.append(particle)
+        self.particles.append(particle)  # добавляем в список частиц
 
         for p in self.particles:
+            # меняем позицию с помощью скорости и уменьшаем жизнь частицы
             p['pos'][0] += p['velocity'][0]
             p['pos'][1] += p['velocity'][1]
             p['life'] -= 1
@@ -538,10 +566,10 @@ class Particles:
             if p['life'] <= 0:
                 self.particles.remove(p)
 
-    def render(self):
+    def render(self):   # отрисовка
         for p in self.particles:
-            k = p['life'] / 128
-            pygame.draw.circle(self.screen, (255 * k, 255 * k, 255 * k), p['pos'], 3)
+            k = p['life'] / 128  # коэффициент, для того чтобы менять цвет.
+            pygame.draw.circle(self.screen, (255 * k, 0 * k, 0 * k), p['pos'], 2)
 
 
 if __name__ == '__main__':
