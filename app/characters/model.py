@@ -130,4 +130,3 @@ class BackPack:
             self.cells.append(Button(screen, i * width_cell + gap, w_height - height_cell, width_cell,
                                      height_cell, colour=(0, 0, 0), borderColour=(255, 255, 255), radius=10,
                                      borderThickness=10))
-

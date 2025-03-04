@@ -6,6 +6,15 @@ from database import Connection
 
 
 class SessionService:
+    @staticmethod
+    def get_name_player_and_date():
+        with Connection() as conn:
+            cur = conn.cursor()
+            try:
+                res = cur.execute('SELECT player_name, date_start FROM sessions')
+            except sqlite3.IntegrityError as e:
+                return False, e
+            return list(res)
 
     @staticmethod
     def create(player_name: str) -> None or bool:

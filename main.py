@@ -207,6 +207,19 @@ class RenderingOtherWindow:
                         }
                     }
                 }
+            },
+            'final_window': {
+                'caption': 'The end',
+                'buttons_column_groups': {
+                    1: {
+                        'xy_start': (self.w_w // 3, self.w_h // 1.2),
+                        'width_height': (self.w_w // 3, self.w_h // 12),
+                        'gap': 10,
+                        'buttons': {
+                            1: ('exit_to_menu-btn',)
+                        }
+                    }
+                }
             }
         }
 
@@ -217,6 +230,18 @@ class RenderingOtherWindow:
 
     def show_about_the_game(self):
         self.render('about_the_game_menu')
+
+    def draw_text(self, text: str, alpha, y: int = 0):
+        size = 64 if text == 'The End' else 30
+        font = pygame.font.Font(None, size)
+        text_surface = font.render(text, True, (255, 255, 255))
+        text_surface.set_alpha(alpha)  # Устанавливаем уровень прозрачности
+        center = (self.w_w // 2, self.w_h // 6) if text == 'The End' else (self.w_w // 2, self.w_h // 4 + y)
+        text_rect = text_surface.get_rect(center=center)
+        self.screen.blit(text_surface, text_rect)
+
+    def show_final_window(self):
+        self.render('final_window')
 
     def check_errors(self):
         if self.returned_errors:
@@ -236,6 +261,8 @@ class RenderingOtherWindow:
         self.all_buttons.clear()
         pygame.mouse.set_visible(True)
         data = self.types_of_window.get(type_window)
+        clock = pygame.time.Clock()
+        alpha, y = 0, 0
         if data is None:
             return
         pygame.display.set_caption(data.get('caption', 'Просто окно'))
@@ -253,6 +280,7 @@ class RenderingOtherWindow:
                                                              input_text_box_parameter['placeholderText']))
         if type_window == 'pause_game':
             self.all_buttons[1].onClick = lambda: self.return_to_menu(from_pause=True)
+
         background_color = self.base_window_arguments['background-color']
         background_image = False
         if data.get('background-image'):
@@ -292,10 +320,23 @@ class RenderingOtherWindow:
                     if text[1] == 'inline':
                         text[0].draw_rect_frame_in_full_line(self.screen, 50, self.w_w)
                     text[0].render(self.screen)
+            if type_window == 'final_window':
+                if alpha < 255:
+                    alpha += 2  # Увеличиваем на 2 каждый кадр
+                else:
+                    alpha = 255
+                self.draw_text(f'The End', alpha)
+                for el in SessionService.get_name_player_and_date()[:10]:
+                    y += 30
+                    self.draw_text(f'nickname: {el[0]} - start: {el[1]}', alpha, y)
+            y = 0
             self.particles.update()
-            self.particles.render((255, 0, 0) if type_window != 'pause_game' else (255, 255, 255))
+            self.particles.render((255, 0, 0) if type_window != 'pause_game' and type_window != 'final_window'
+                                  else (255, 255, 255))
             pygame_widgets.update(events)
             pygame.display.update()
+            pygame.display.flip()
+            clock.tick(60)
 
     def iterate_group_buttons(self, group: dict, type_group: str) -> list:
         res_buttons = []
@@ -399,6 +440,7 @@ class RenderingOtherWindow:
             events = pygame.event.get()
             clock = pygame.time.Clock()
             # backpack.render(self.screen, self.w_w, self.w_h)
+
             for event in events:
                 if event.type == pygame.QUIT:
                     quit()
