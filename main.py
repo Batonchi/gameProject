@@ -419,7 +419,8 @@ class RenderingOtherWindow:
         game_class.screen.fill((34, 35, 35))
         map_game.render(game_class.screen, 0, 0, 100, 100)
         player_start_xy = map_game.get_character_xy_by_tile_xy(params[1].player_start_x, params[1].player_start_y)
-        game_model_character = Character(character=params[2], speed=(self.w_w // 450, self.w_h // 450), x=player_start_xy[0],
+        game_model_character = Character(character=params[2], speed=(self.w_w // 450, self.w_h // 450),
+                                         x=player_start_xy[0],
                                          y=player_start_xy[1], tile_width=player_w_and_h[last_name_sim][0],
                                          tile_height=player_w_and_h[last_name_sim][1])
         backpack = BackPack(10, game_model_character)
@@ -435,6 +436,8 @@ class RenderingOtherWindow:
         interactions = Interactions(rects=map_game.interactions,
                                     tile_width=player_w_and_h[last_name_sim][0],
                                     tile_height=player_w_and_h[last_name_sim][1])
+
+        npc_level = []
         while running:
             pygame.mouse.set_visible(False)
             events = pygame.event.get()
@@ -462,11 +465,14 @@ class RenderingOtherWindow:
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:  # Для меню паузы
                         game_class.render_other_window_handler.render('pause_game')
-            #     if event.type == pygame.K_f:
-            #         result_i = interactions.check_rect_in_zone(game_model_character.rect)
-            #         if result_i[0]:
-            #             # вот здесь мы начинаем диалог с нпс или комментарий ГГ
-            #             pass
+                if event.type == pygame.K_f:
+                    result_i = interactions.check_rect_in_zone(game_model_character.rect)
+                    result_npc = game_model_character.check_rect_in_zone(game_model_character.rect, npc_level)
+                    if result_i[0]:
+                        # вот здесь мы начинаем диалог с нпс или комментарий ГГ
+                        pass
+                    if result_npc[0]:
+                        pass
             #
             result_i = interactions.check_rect_in_zone(game_model_character.rect)  # если игрок заходит в зону "события"
             # Добавляем это событие/взаимодействие в список активных. После обновляем

@@ -217,7 +217,7 @@ class KeysDoors:
         # вместо всех подобранных ключей - отрисовываем тайл пола
         for el in self.keys_taken:
             image = pygame.image.load(os.path.join('app/view/images/', 'tile_0017.png'))
-            screen.blit(pygame.transform.scale(image, (self.tile_width, self.tile_height)), (el.x, el.y))
+            screen.blit(pygame.transform.scale(image, (self.tile_width + 6, self.tile_height)), (el.x, el.y))
 
     def check_rect_in_zone(self, player_rect: pygame.Rect):  # поверяем находится ли игрок в зоне ключа, если да - True,
         # следовательно, игрок может подобрать ключ
@@ -261,6 +261,19 @@ class Notes:
 
 class Interactions:  # это класс особых "событий", которые нужны для того, чтобы начать комментарий игрока (ГГ), тобишь
     # диалог
+    def check_rect_in_zone(self, player_rect: pygame.Rect):  # проверяем, находится ли игрок в зоне прямугольников,
+        # если да - True
+        for zone_interaction in self.zone_rects_interaction:
+            if player_rect.colliderect(zone_interaction):
+                return [True, zone_interaction]
+        return [False]
+
+    def add_active(self, rect_zone):  # если игрок хотя бы один раз зашел в зону "события", добавляем в список
+        for rect in self.rects_interaction:
+            if rect.colliderect(rect_zone):
+                if rect not in self.active:
+                    self.active.append(rect)
+
     def __init__(self, rects: list, tile_width: int, tile_height: int):
         self.tile_width, self.tile_height = tile_width, tile_height
 
@@ -277,16 +290,3 @@ class Interactions:  # это класс особых "событий", кото
         for el in self.active:
             image = pygame.image.load(os.path.join('app/view/images/', 'tile_0116.png'))
             screen.blit(pygame.transform.scale(image, (self.tile_width, self.tile_height)), (el.x, el.y))
-
-    def check_rect_in_zone(self, player_rect: pygame.Rect):  # проверяем, находится ли игрок в зоне прямугольников,
-        # если да - True
-        for zone_interaction in self.zone_rects_interaction:
-            if player_rect.colliderect(zone_interaction):
-                return [True, zone_interaction]
-        return [False]
-
-    def add_active(self, rect_zone):  # если игрок хотя бы один раз зашел в зону "события", добавляем в список
-        for rect in self.rects_interaction:
-            if rect.colliderect(rect_zone):
-                if rect not in self.active:
-                    self.active.append(rect)

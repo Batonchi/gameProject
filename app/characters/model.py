@@ -35,8 +35,8 @@ class Character(pygame.sprite.Sprite):
         self.character = character
         self.emotional_health = self.character.get_info()['emotional_health']
         self.image = pygame.image.load(os.path.join('app/view/images/character.png'))
-        self.y = y
-        self.x = x
+        self.y = 70
+        self.x = 550
         self.image = pygame.transform.scale(self.image, (tile_width, tile_height))
         image2 = pygame.image.load(os.path.join('app/view/images/' + 'tile_0004(2).png'))
         image2 = pygame.transform.scale(image2, (tile_width, tile_height))
@@ -45,7 +45,10 @@ class Character(pygame.sprite.Sprite):
         self.images = [self.image, image2, image3]
         self.index = 0
         self.tile_size = tile_width, tile_height
+
         self.rect = pygame.Rect([self.x, self.y, tile_width, tile_height])
+        self.zone_rect = pygame.Rect([self.x - 6, self.y - 6, tile_width + 10, tile_height + 10])
+
         self.speed = speed
         if self.character.get_info()['permissions']:
             self.permissions = character.inf.get('permissions')
@@ -62,6 +65,12 @@ class Character(pygame.sprite.Sprite):
         if self.is_npc:
             self.dialog = character.inf.get('dialog')
             self.dialog_link = self.dialog
+
+    def check_rect_in_zone(self, player_rect: pygame.Rect, zone_rect: list):
+        for rect in zone_rect:
+            if player_rect.colliderect(rect):
+                return [True]
+        return [False]
 
     def move(self, word: str):
         if word == 'up':
