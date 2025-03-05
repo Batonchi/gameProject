@@ -210,8 +210,10 @@ class KeysDoors:
 
     def add_taken_key(self, key_zone):  # Просто добавляем подобранный ключ в список
         for key in self.rects_keys:
-            if key.colliderect(key_zone):
+            if key.colliderect(key_zone) and key not in self.keys_taken:
                 self.keys_taken.append(key)
+                return True
+        return False
 
     def update(self, screen):
         # вместо всех подобранных ключей - отрисовываем тайл пола
@@ -255,8 +257,10 @@ class Notes:
     def add_taken_note(self, rect_zone):
         # подобранные записки добавляем в список
         for note in self.rects_notes:
-            if note.colliderect(rect_zone):
+            if note.colliderect(rect_zone) and note not in self.notes_taken:
                 self.notes_taken.append(note)
+                return True
+        return False
 
 
 class Interactions:  # это класс особых "событий", которые нужны для того, чтобы начать комментарий игрока (ГГ), тобишь

@@ -11,11 +11,12 @@ from app.sessions.model import GetSession, GetLevel
 from database import create_database
 from typing import Tuple
 from pygame_widgets.textbox import TextBox
-from app.characters.model import Character, GetCharacter, CreateCharacter, BackPack
+from app.characters.model import Character, GetCharacter, CreateCharacter, BackPack, Item
 from app.map.model import Map, PlayerCamera, Doors, KeysDoors, Notes, Interactions
 from pygame_widgets.button import Button
 from app.sessions.service import SessionService, LevelService
-from app.texts.model import ShowTextContent, GetText
+from app.texts.model import ShowTextContent
+from app.texts.service import GetText, TextService, CreateText, all_dicts
 
 create_database()
 
@@ -58,7 +59,7 @@ class Game:
 
         if game_session is not None:
             (self.render_other_window_handler.types_of_window['main_menu']
-             ['buttons_column_groups'][1]['buttons'][1]) = ('continue_game_session-btn', True)
+            ['buttons_column_groups'][1]['buttons'][1]) = ('continue_game_session-btn', True)
             self.render_other_window_handler.render('main_menu',
                                                     param={'player_name': game_session.player_name,
                                                            'title': self.name})
@@ -69,6 +70,8 @@ class Game:
 
 class RenderingOtherWindow:
     def __init__(self, screen: pygame.surface.Surface, w_w: int, w_h: int, link: Game):
+        self.player_w_and_h = None
+        self.w_and_h_for_map = None
         self.screen = screen
         self.w_w = w_w
         self.w_h = w_h
@@ -77,6 +80,7 @@ class RenderingOtherWindow:
         self.all_inputs = []
         self.texts = []
         self.returned_errors = []
+        self.active_dialogs = []
         self.show = True
         self.base_button_arguments = {
             'win': self.screen,
@@ -207,19 +211,6 @@ class RenderingOtherWindow:
                         }
                     }
                 }
-            },
-            'final_window': {
-                'caption': 'The end',
-                'buttons_column_groups': {
-                    1: {
-                        'xy_start': (self.w_w // 3, self.w_h // 1.2),
-                        'width_height': (self.w_w // 3, self.w_h // 12),
-                        'gap': 10,
-                        'buttons': {
-                            1: ('exit_to_menu-btn',)
-                        }
-                    }
-                }
             }
         }
 
@@ -294,7 +285,7 @@ class RenderingOtherWindow:
             if param.get('title'):
                 pygame.display.set_caption(param.get('title')[0])
                 self.texts.append((ShowTextContent(GetText(0, json.dumps({'text': param.get('title')})),
-                                                   (0, 0, 0), 128,
+                                                   (0, 0, 0), self.w_h // 14,
                                                    (200, 200, 200), (self.w_w // 4.9, self.w_h // 6),
                                                    padding=(10, 10, 10, 10), border_radius=10), 'inline'))
         if self.texts:
@@ -377,7 +368,8 @@ class RenderingOtherWindow:
                       pressedColour=self.base_button_arguments['pressedColour'],
                       radius=self.base_button_arguments['radius'],
                       fontSize=self.base_button_arguments['fontSize'],
-                      margin=self.base_button_arguments['margin'], borderColour=(155, 155, 155), borderThickness=5)
+                      margin=self.base_button_arguments['margin'], borderColour=(155, 155, 155), borderThickness=5,
+                      font=pygame.font.SysFont('Arial-black', self.base_text_box_arguments['fontSize'], 700))
 
     def create_input_box(self, xy_start: Tuple[int, int], width_height: Tuple[int, int], placeholder_text: str,
                          onsubmit: object) -> TextBox:
@@ -389,7 +381,8 @@ class RenderingOtherWindow:
                        textColour=self.base_text_box_arguments['textColour'],
                        radius=self.base_text_box_arguments['radius'],
                        colour=self.base_text_box_arguments['colour'],
-                       borderThickness=self.base_text_box_arguments['borderThickness'])
+                       borderThickness=self.base_text_box_arguments['borderThickness'],
+                       font=pygame.font.SysFont('Arial-black', self.base_text_box_arguments['fontSize'], 700))
 
     def render_level_map_with_param(self, game_class: Game, params: Tuple[GetSession, GetLevel, GetCharacter]):
         pygame.mixer.music.load(os.path.abspath(os.path.join('app\\music', 'melody_4.mp3')))
@@ -404,46 +397,49 @@ class RenderingOtherWindow:
         running = True
         filename_map = params[1].level_map
         last_name_sim = filename_map.split('.')[0][-1]
-        w_and_h_for_map = {
-            '1': (100, 100),
+        self.w_and_h_for_map = {
+            '1': (63, 60),
             '2': (67, 70),
             '3': (64, 70),
         }
-        player_w_and_h = {
-            '1': '',
+        self.player_w_and_h = {
+            '1': (game_class.w_w // 80, game_class.w_h // 70),
             '2': (game_class.w_w // 80, game_class.w_h // 70),
-            '3': ''
+            '3': (game_class.w_w // 80, game_class.w_h // 70)
         }
-        map_game = Map(filename_map, tile_width=game_class.w_w // w_and_h_for_map[last_name_sim][0],
-                       tile_height=game_class.w_h // w_and_h_for_map[last_name_sim][1])
+        map_game = Map(filename_map, tile_width=game_class.w_w // self.w_and_h_for_map[last_name_sim][0],
+                       tile_height=game_class.w_h // self.w_and_h_for_map[last_name_sim][1])
         game_class.screen.fill((34, 35, 35))
-        map_game.render(game_class.screen, 0, 0, 100, 100)
+        map_game.render(game_class.screen, 0, 0, 70, 70)
         player_start_xy = map_game.get_character_xy_by_tile_xy(params[1].player_start_x, params[1].player_start_y)
         game_model_character = Character(character=params[2], speed=(self.w_w // 450, self.w_h // 450),
                                          x=player_start_xy[0],
-                                         y=player_start_xy[1], tile_width=player_w_and_h[last_name_sim][0],
-                                         tile_height=player_w_and_h[last_name_sim][1])
-        backpack = BackPack(10, game_model_character)
+                                         y=player_start_xy[1], tile_width=self.player_w_and_h[last_name_sim][0],
+                                         tile_height=self.player_w_and_h[last_name_sim][1])
+        backpack = BackPack(15, game_model_character)
         camera = PlayerCamera(game_model_character, 10, 10)
-        doors = Doors(map_game.doors, tile_width=player_w_and_h[last_name_sim][0],
-                      tile_height=player_w_and_h[last_name_sim][1],
+        doors = Doors(map_game.doors, tile_width=self.player_w_and_h[last_name_sim][0],
+                      tile_height=self.player_w_and_h[last_name_sim][1],
                       pairs_doors_rects=map_game.rects_doors)
-        keys_doors = KeysDoors(self.screen, keys=map_game.keys, tile_width=player_w_and_h[last_name_sim][0],
-                               tile_height=player_w_and_h[last_name_sim][1]
+        keys_doors = KeysDoors(self.screen, keys=map_game.keys, tile_width=self.player_w_and_h[last_name_sim][0],
+                               tile_height=self.player_w_and_h[last_name_sim][1]
                                )
-        notes = Notes(rects=map_game.notes, tile_width=player_w_and_h[last_name_sim][0],
-                      tile_height=player_w_and_h[last_name_sim][0])
+        notes = Notes(rects=map_game.notes, tile_width=self.player_w_and_h[last_name_sim][0],
+                      tile_height=self.player_w_and_h[last_name_sim][0])
         interactions = Interactions(rects=map_game.interactions,
-                                    tile_width=player_w_and_h[last_name_sim][0],
-                                    tile_height=player_w_and_h[last_name_sim][1])
-
-        npc_level = []
+                                    tile_width=self.player_w_and_h[last_name_sim][0],
+                                    tile_height=self.player_w_and_h[last_name_sim][1])
+        backpack.render(self.screen, self.w_w, self.w_h)
+        text = ShowTextContent(GetText(0, json.dumps({'text': 'hfbk,bdfk,bkbnddkbdfdkjb'})),
+                               (0, 0, 0), 20,
+                               (200, 200, 200), (self.w_w // 4.9, self.w_h // 6),
+                               padding=(10, 10, 10, 10), border_radius=10)
         while running:
             pygame.mouse.set_visible(False)
+            if not backpack.is_show:
+                backpack.show_buttons()
             events = pygame.event.get()
             clock = pygame.time.Clock()
-            # backpack.render(self.screen, self.w_w, self.w_h)
-
             for event in events:
                 if event.type == pygame.QUIT:
                     quit()
@@ -458,12 +454,30 @@ class RenderingOtherWindow:
                         if result_d[0]:
                             doors.removing_closed_door(result_d[1])  # если True, удаляем дверь
                         if result_k[0]:
-                            keys_doors.add_taken_key(result_k[1])  # если True, добавляем подобранный ключ в список
-                            # здесь еще нужно дописать, чтобы в инвентарь ключ добавлялся
+                            if keys_doors.add_taken_key(result_k[1]):
+                                free_cell = backpack.get_last_free_cell()
+                                if free_cell is not None:
+                                    backpack.take(free_cell, Item('hi',
+                                                                  {'image': 'key'},
+                                                                  lambda: print('hi')))
                         if result_n[0]:
-                            notes.add_taken_note(result_n[1])  # если True, добавляем подобранную записку в список
-                if event.type == pygame.KEYDOWN:
+                            if notes.add_taken_note(result_n[1]):
+                                free_cell = backpack.get_last_free_cell()
+                                if free_cell is not None:
+                                    data_for_note = ''  # здесь поолучаем текст из БД для записки
+                                    backpack.take(free_cell, Item('hгi',
+                                                                  {'image': 'note'},
+                                                                  lambda: print('hi')))
+                    if event.key == pygame.K_LEFT:
+                        backpack.do_unselected(backpack.active_cell_id)
+                        backpack.previous_item()
+                        backpack.do_selected(backpack.active_cell_id)
+                    if event.key == pygame.K_RIGHT:
+                        backpack.do_unselected(backpack.active_cell_id)
+                        backpack.next_item()
+                        backpack.do_selected(backpack.active_cell_id)
                     if event.key == pygame.K_ESCAPE:  # Для меню паузы
+                        backpack.close_backpack()
                         game_class.render_other_window_handler.render('pause_game')
                 if event.type == pygame.K_f:
                     result_i = interactions.check_rect_in_zone(game_model_character.rect)
@@ -553,21 +567,24 @@ class RenderingOtherWindow:
         print(pygame.display.get_caption())
         if game_session is not None:
             (self.types_of_window['main_menu']
-             ['buttons_column_groups'][1]['buttons'][1]) = ('continue_game_session-btn', True)
+            ['buttons_column_groups'][1]['buttons'][1]) = ('continue_game_session-btn', True)
             self.render('main_menu', param={'player_name': game_session.player_name,
                                             'title': 'Absolutely Depressive Live'})
         self.render(type_window='main_menu', param={'title': 'Absolutely Depressive Live'})
 
     def continue_game_show(self):
         self.show = False
+        game_class = self.link
         for button in self.all_buttons:
             button.hide()
         self.all_buttons.clear()
         last_session = SessionService.get_last_session()
         map_path = LevelService.get_level_by_id(last_session.level_id).level_map
-        map_game = Map(map_path, tile_width=self.w_w // 100, tile_height=self.w_h // 100)
+        last_name_sim = map_path.split('\\')[-1].split('.')[0][-1]
+        map_game = Map(map_path, tile_width=game_class.w_w // self.w_and_h_for_map[last_name_sim][0],
+                       tile_height=game_class.w_h // self.w_and_h_for_map[last_name_sim][1])
         self.screen.fill((34, 35, 35))
-        map_game.render(self.screen, 0, 0, 100, 100)
+        map_game.render(self.screen, 0, 0, 70, 70)
 
 
 class OnClickFunctions:
@@ -643,4 +660,10 @@ class Particles:  # класс частиц
 
 
 if __name__ == '__main__':
+    # for el in all_dicts:
+    #     TextService.save(CreateText(el))
+    # with open('notes_text.txt', 'r', encoding='utf-8') as f:
+    #     for text in f.readlines():
+    #         TextService.save(CreateText({'text': text, 'next': None}))
+
     game = Game('Absolutely Depressive Live')

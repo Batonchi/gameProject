@@ -35,3 +35,18 @@ class CharacterService:
                             SET inf = ?
             ''', (character_id, inf))
             conn.commit()
+
+    @staticmethod
+    def get_all_npc_characters():
+        with Connection() as conn:
+            cur = conn.cursor()
+            cur.execute('SELECT * FROM characters')
+            result = cur.fetchall()
+            characters = [GetCharacter(character[0], character[1], character[2]) for character in result]
+            return [el for el in characters if el.inf['is_npc']]
+
+
+npc = [
+    ('Незнакомец', {'permissions': {}, 'dialog': {}, 'is_npc': True, }),
+    ('Просто НПС', {}),
+]

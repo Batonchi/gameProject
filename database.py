@@ -1,4 +1,5 @@
 import sqlite3
+import os
 
 
 class Connection:
@@ -17,11 +18,6 @@ def create_database():
         cur.execute('''CREATE TABLE IF NOT EXISTS all_activities (
             activity_id INTEGER PRIMARY KEY AUTOINCREMENT,
             name_activity TEXT NOT NULL,
-            inf TEXT NOT NULL DEFAULT '{}'
-        )''')
-        cur.execute('''CREATE TABLE IF NOT EXISTS items (
-            item_id INTEGER PRIMARY KEY AUTOINCREMENT,
-            item_name TEXT NOT NULL,
             inf TEXT NOT NULL DEFAULT '{}'
         )''')
         cur.execute('''CREATE TABLE IF NOT EXISTS places (
