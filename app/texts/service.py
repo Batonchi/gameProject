@@ -8,7 +8,7 @@ class TextService:
     def save(text: CreateText):
         with Connection() as connection:
             cur = connection.cursor()
-            cur.execute('''INSERT INTO texts (content) VALUES (?)''', (text.content,))
+            cur.execute('''INSERT INTO texts (content, user_id) VALUES (?)''', (text.content,))
             connection.commit()
 
     @staticmethod

@@ -11,7 +11,7 @@ from app.sessions.model import GetSession, GetLevel
 from database import create_database
 from typing import Tuple
 from pygame_widgets.textbox import TextBox
-from app.characters.model import Character, GetCharacter, CreateCharacter, BackPack
+from app.characters.model import Character, GetCharacter, CreateCharacter, BackPack, Item
 from app.map.model import Map, PlayerCamera, Doors, KeysDoors, Notes, Interactions
 from pygame_widgets.button import Button
 from app.sessions.service import SessionService, LevelService
@@ -80,6 +80,7 @@ class RenderingOtherWindow:
         self.all_inputs = []
         self.texts = []
         self.returned_errors = []
+        self.active_dialogs = []
         self.show = True
         self.base_button_arguments = {
             'win': self.screen,
@@ -269,7 +270,7 @@ class RenderingOtherWindow:
             if param.get('title'):
                 pygame.display.set_caption(param.get('title')[0])
                 self.texts.append((ShowTextContent(GetText(0, json.dumps({'text': param.get('title')})),
-                                                   (0, 0, 0), self.w_h // 9,
+                                                   (0, 0, 0), self.w_h // 14,
                                                    (200, 200, 200), (self.w_w // 4.9, self.w_h // 6),
                                                    padding=(10, 10, 10, 10), border_radius=10), 'inline'))
         if self.texts:
@@ -339,7 +340,8 @@ class RenderingOtherWindow:
                       pressedColour=self.base_button_arguments['pressedColour'],
                       radius=self.base_button_arguments['radius'],
                       fontSize=self.base_button_arguments['fontSize'],
-                      margin=self.base_button_arguments['margin'], borderColour=(155, 155, 155), borderThickness=5)
+                      margin=self.base_button_arguments['margin'], borderColour=(155, 155, 155), borderThickness=5,
+                      font=pygame.font.SysFont('Arial-black', self.base_text_box_arguments['fontSize'], 700))
 
     def create_input_box(self, xy_start: Tuple[int, int], width_height: Tuple[int, int], placeholder_text: str,
                          onsubmit: object) -> TextBox:
@@ -351,7 +353,8 @@ class RenderingOtherWindow:
                        textColour=self.base_text_box_arguments['textColour'],
                        radius=self.base_text_box_arguments['radius'],
                        colour=self.base_text_box_arguments['colour'],
-                       borderThickness=self.base_text_box_arguments['borderThickness'])
+                       borderThickness=self.base_text_box_arguments['borderThickness'],
+                       font=pygame.font.SysFont('Arial-black', self.base_text_box_arguments['fontSize'], 700))
 
     def render_level_map_with_param(self, game_class: Game, params: Tuple[GetSession, GetLevel, GetCharacter]):
         pygame.mixer.music.load(os.path.abspath(os.path.join('app\\music', 'melody_4.mp3')))
@@ -399,6 +402,10 @@ class RenderingOtherWindow:
                                     tile_width=self.player_w_and_h[last_name_sim][0],
                                     tile_height=self.player_w_and_h[last_name_sim][1])
         backpack.render(self.screen, self.w_w, self.w_h)
+        text = ShowTextContent(GetText(0, json.dumps({'text': 'hfbk,bdfk,bkbnddkbdfdkjb'})),
+                               (0, 0, 0), 20,
+                               (200, 200, 200), (self.w_w // 4.9, self.w_h // 6),
+                               padding=(10, 10, 10, 10), border_radius=10)
         while running:
             pygame.mouse.set_visible(False)
             if not backpack.is_show:
@@ -419,10 +426,20 @@ class RenderingOtherWindow:
                         if result_d[0]:
                             doors.removing_closed_door(result_d[1])  # если True, удаляем дверь
                         if result_k[0]:
-                            keys_doors.add_taken_key(result_k[1])  # если True, добавляем подобранный ключ в список
-                            # здесь еще нужно дописать, чтобы в инвентарь ключ добавлялся
+                            if keys_doors.add_taken_key(result_k[1]):
+                                free_cell = backpack.get_last_free_cell()
+                                if free_cell is not None:
+                                    backpack.take(free_cell, Item('hi',
+                                                                  {'image': 'key'},
+                                                                  lambda: print('hi')))
                         if result_n[0]:
-                            notes.add_taken_note(result_n[1])  # если True, добавляем подобранную записку в список
+                            if notes.add_taken_note(result_n[1]):
+                                free_cell = backpack.get_last_free_cell()
+                                if free_cell is not None:
+                                    data_for_note = ''  # здесь поолучаем текст из БД для записки
+                                    backpack.take(free_cell, Item('hгi',
+                                                                  {'image': 'note'},
+                                                                  lambda: print('hi')))
                     if event.key == pygame.K_LEFT:
                         backpack.do_unselected(backpack.active_cell_id)
                         backpack.previous_item()

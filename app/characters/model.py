@@ -4,7 +4,6 @@ import json
 
 from typing import Tuple
 from pygame_widgets.animations.animation import Recolour
-from app.items.model import GetItem
 from pygame_widgets.button import Button
 
 
@@ -34,35 +33,38 @@ class Character(pygame.sprite.Sprite):
                  speed: Tuple[float, float] = (1, 1), y: int = 0, x: int = 0):
         super().__init__()
         self.character = character
-        self.emotional_health = self.character.get_info()['emotional_health']
-        self.image = pygame.image.load(os.path.join('app/view/images/character.png'))
+        images_path = {}
+        self.image = pygame.image.load(os.path.
+                                       join(f'app/view/images/character.png'))
         self.y = y
         self.x = x
         self.image = pygame.transform.scale(self.image, (tile_width, tile_height))
-        image2 = pygame.image.load(os.path.join('app/view/images/' + 'tile_0004(2).png'))
-        image2 = pygame.transform.scale(image2, (tile_width, tile_height))
-        image3 = pygame.image.load(os.path.join('app/view/images/' + 'tile_0010(4).png'))
-        image3 = pygame.transform.scale(image3, (tile_width, tile_height))
-        self.images = [self.image, image2, image3]
+        self.is_npc = self.character.inf.get('is_npc', True)
+        if self.is_npc:
+            self.dialog = character.inf.get('dialog')
+            self.dialog_link = self.dialog
+        else:
+            self.emotional_health = self.character.get_info().get('emotional_health', 100)
+            image2 = pygame.image.load(os.path.join('app/view/images/' + 'tile_0004(2).png'))
+            image2 = pygame.transform.scale(image2, (tile_width, tile_height))
+            image3 = pygame.image.load(os.path.join('app/view/images/' + 'tile_0010(4).png'))
+            image3 = pygame.transform.scale(image3, (tile_width, tile_height))
+            self.images = [self.image, image2, image3]
+            self.speed = speed
         self.index = 0
         self.tile_size = tile_width, tile_height
         self.rect = pygame.Rect([self.x, self.y, tile_width, tile_height])
-        self.speed = speed
-        if self.character.get_info()['permissions']:
+        if self.character.get_info().get('permissions'):
             self.permissions = character.inf.get('permissions')
         else:
             self.permissions = {
                 'may_move': False,
-                'may_speak': False,
+                'may_speak': True,
                 'may_use_items': False,
                 'may_have_backpack': False
             }
         if self.permissions['may_have_backpack']:
             self.backpack = BackPack(character.inf.get('backpack_volume') or 10, self)
-        self.is_npc = character.inf.get('_is_npc') or True
-        if self.is_npc:
-            self.dialog = character.inf.get('dialog')
-            self.dialog_link = self.dialog
 
     def move(self, word: str):
         if word == 'up':
@@ -97,6 +99,21 @@ class Character(pygame.sprite.Sprite):
         self.dialog_link = self.dialog
 
 
+class Item:
+
+    def __init__(self, item_name: str, inf: dict, func, harmless: int = 10):
+        self.item_name = item_name
+        self.inf = inf
+        self.use_func = func
+        self.harmless = harmless
+
+    def use_item(self):
+        self.use_func()
+
+    def do_affect(self, character: Character):
+        character.emotional_health += self.harmless
+
+
 class BackPack:
 
     def __init__(self, volume: int, character: Character):
@@ -107,24 +124,22 @@ class BackPack:
         self.volume = volume
         self.character = character
         self.is_show = True
-        self.rest = [None for _ in range(self.volume)]
+        self.rest = [0 for _ in range(self.volume)]
         self.cells = []
 
-    def add(self, item: GetItem):
-        self.rest.append(item)
+    def take(self, i: int, item: Item):
+        self.remove_item(i)
+        self.rest[i] = item
+        # self.cells[i].image = pygame.transform.scale(
+        #     pygame.image.load(os.path.abspath(f'app\\map\\icons\\{item.inf.get('image')}.png')),
+        #     (self.width_cell // 3, self.height_cell // 2))
+        self.cells[i].setText(item.item_name)
+        self.cells[i].font = pygame.font.SysFont('Arial-black', 30, bold=500)
 
-    def remove(self, item_i: int):
-        self.rest.pop(item_i)
-
-    def check_items(self):
-        for item in self.rest:
-            if item.inf.get('is_wasted') and item.inf.get('may_deleted'):
-                self.remove(item)
-
-    def get_item_by_name(self, name: str) -> GetItem:
-        for item in self.rest:
-            if item.item_name == name:
-                return item
+    def get_last_free_cell(self) -> int | None:
+        for cell in range(0, self.volume):
+            if self.rest[cell] == 0:
+                return cell
 
     def do_selected(self, cell_i: int):
         button = self.cells[cell_i]
@@ -140,13 +155,9 @@ class BackPack:
         gap = 20
         self.width_cell, self.height_cell = ((w_width // self.volume) - gap, w_height // 20)
         for i in range(0, self.volume):
-            image_name = 'tile_0120'
             self.cells.append(Button(screen, i * (self.width_cell + gap), w_height - self.height_cell, self.width_cell,
                                      self.height_cell, colour=(30, 30, 30), borderColour=(155, 155, 155), radius=10,
-                                     borderThickness=1, textColour=(255, 255, 255),
-                                     image=pygame.transform
-                                     .scale(pygame.image.load(f'app/map/ buttons_icons/{image_name}.png'),
-                                            (self.width_cell // 3, self.height_cell // 2))))
+                                     borderThickness=1, textColour=(255, 255, 255)))
             if self.cells[-1].image is None:
                 self.cells[-1].setText('пусто')
         self.do_selected(self.active_cell_id)
@@ -175,5 +186,4 @@ class BackPack:
         self.rest[cell_i] = None
         self.cells[cell_i].setText('пусто')
         self.cells[cell_i].image = None
-
-
+        self.cells[cell_i].font_size = 20

@@ -20,11 +20,6 @@ def create_database():
             name_activity TEXT NOT NULL,
             inf TEXT NOT NULL DEFAULT '{}'
         )''')
-        cur.execute('''CREATE TABLE IF NOT EXISTS items (
-            item_id INTEGER PRIMARY KEY AUTOINCREMENT,
-            item_name TEXT NOT NULL,
-            inf TEXT NOT NULL DEFAULT '{}'
-        )''')
         cur.execute('''CREATE TABLE IF NOT EXISTS places (
             place_id INTEGER PRIMARY KEY AUTOINCREMENT,
             place_name TEXT NOT NULL,
