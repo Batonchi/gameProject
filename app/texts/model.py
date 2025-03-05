@@ -1,7 +1,8 @@
 import json
-from typing import Tuple
-
 import pygame
+import pytmx
+
+from typing import Tuple
 
 
 class CreateText:
@@ -48,7 +49,13 @@ class ShowTextContent:
         pygame.draw.rect(screen, self.background_color, pygame.rect.Rect(0, self.rect.y - v_padding // 2,
                                                                          x_end,
                                                                          self.rect.height + v_padding),
-                         border_radius=10)
+                         border_radius=5)
+
+    # def draw_tile_adapt_frame(self, screen: pygame.Surface):
+    #     tile_map = pytmx.TiledMap('for_dialog')
+    #     for y in range(0, 3):
+    #         for x in range(0, 100):
+
 
     def get_text_width(self) -> int:
         return self.padding[0] + self.rect.width + self.padding[2]

@@ -3,6 +3,7 @@ import os
 import json
 
 from typing import Tuple
+from pygame_widgets.animations.animation import Recolour
 from app.items.model import GetItem
 from pygame_widgets.button import Button
 
@@ -99,16 +100,21 @@ class Character(pygame.sprite.Sprite):
 class BackPack:
 
     def __init__(self, volume: int, character: Character):
+        self.active_cell_id = 0
+        self.height_cell = None
+        self.width_cell = None
+        self.gap = 10
         self.volume = volume
         self.character = character
+        self.is_show = True
         self.rest = [None for _ in range(self.volume)]
         self.cells = []
 
     def add(self, item: GetItem):
         self.rest.append(item)
 
-    def remove(self, item: GetItem):
-        self.rest.remove(item)
+    def remove(self, item_i: int):
+        self.rest.pop(item_i)
 
     def check_items(self):
         for item in self.rest:
@@ -120,14 +126,54 @@ class BackPack:
             if item.item_name == name:
                 return item
 
-    def do_selected(self):
-        pass
+    def do_selected(self, cell_i: int):
+        button = self.cells[cell_i]
+        animation = Recolour(widget=button, colour=(50, 0, 0), timeout=0)
+        animation.start()
+
+    def do_unselected(self, cell_i: int):
+        button = self.cells[cell_i]
+        animation = Recolour(widget=button, colour=(30, 30, 30), timeout=0)
+        animation.start()
 
     def render(self, screen: pygame.Surface, w_width: int, w_height: int):
-        gap = 10
-        width_cell, height_cell = (w_width - (self.volume * 10) // self.volume, w_height // 20)
+        gap = 20
+        self.width_cell, self.height_cell = ((w_width // self.volume) - gap, w_height // 20)
         for i in range(0, self.volume):
-            self.cells.append(Button(screen, i * width_cell + gap, w_height - height_cell, width_cell,
-                                     height_cell, colour=(0, 0, 0), borderColour=(255, 255, 255), radius=10,
-                                     borderThickness=10))
+            image_name = 'tile_0120'
+            self.cells.append(Button(screen, i * (self.width_cell + gap), w_height - self.height_cell, self.width_cell,
+                                     self.height_cell, colour=(30, 30, 30), borderColour=(155, 155, 155), radius=10,
+                                     borderThickness=1, textColour=(255, 255, 255),
+                                     image=pygame.transform
+                                     .scale(pygame.image.load(f'app/map/ buttons_icons/{image_name}.png'),
+                                            (self.width_cell // 3, self.height_cell // 2))))
+            if self.cells[-1].image is None:
+                self.cells[-1].setText('пусто')
+        self.do_selected(self.active_cell_id)
+
+    def show_buttons(self):
+        for cell in self.cells:
+            cell.show()
+        self.is_show = True
+
+    def close_backpack(self):
+        for cell in self.cells:
+            cell.hide()
+        self.is_show = False
+
+    def next_item(self):
+        self.active_cell_id += 1
+        if self.active_cell_id == len(self.cells):
+            self.active_cell_id = 0
+
+    def previous_item(self):
+        self.active_cell_id -= 1
+        if self.active_cell_id == -1:
+            self.active_cell_id = len(self.cells) - 1
+
+    def remove_item(self, cell_i: int):
+        self.rest[cell_i] = None
+        self.cells[cell_i].setText('пусто')
+        self.cells[cell_i].image = None
+
 

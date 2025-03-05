@@ -25,3 +25,16 @@ class ItemService:
         with Connection() as conn:
             conn.cursor().execute('''DELETE FROM items WHERE item_id = ?''', (item_id,))
             conn.commit()
+
+
+doors = [
+    ('door', {'is_closed': False, 'key_value': '1'})
+]
+
+keys = [
+    ('key', {'value': '1'}),
+]
+
+notes = [
+    ('note', {'content': 'id'})
+]
