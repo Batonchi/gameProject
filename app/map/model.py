@@ -34,10 +34,11 @@ class Map:
         self.walls_layer = self.map.get_layer_by_name('walls')
 
         self.rects_doors = dict()
+        self.names_doors = dict()
+        self.keys = dict()
 
         # Списки нужны для взаимодействия с игроком и прочим.
         self.walls = []
-        self.keys = []
         self.notes = []
         self.doors = []
         self.interactions = []
@@ -50,8 +51,6 @@ class Map:
         rect = pygame.Rect([x * self.tile_width, y * self.tile_height,
                             self.tile_width, self.tile_height])
         # смотрим куда добавляем прямоугольник
-        if type_tile == 'key':
-            self.keys.append(rect)
         if type_tile == 'note':
             self.notes.append(rect)
         else:
@@ -62,6 +61,7 @@ class Map:
                         (self.left + (x * self.tile_width), self.top + (y * self.tile_height)))
 
     def render(self, screen, x_i: int, y_i: int, width: int, height: int):
+        count = 0
         for y in range(y_i, height):
             for x in range(x_i, width):
                 # получаем тайл на данных координатах, после отображаем его на экране
@@ -84,8 +84,9 @@ class Map:
                                     (self.left + (x * self.tile_width), self.top + (y * self.tile_height)))
 
                     elif key is not None:
-                        self.keys.append(pygame.Rect([x * self.tile_width, y * self.tile_height, self.tile_width,
-                                                      self.tile_height]))
+                        count += 1
+                        self.keys[f'name{count}'] = pygame.Rect([x * self.tile_width, y * self.tile_height,
+                                                                 self.tile_width, self.tile_height])
                         screen.blit(pygame.transform.scale(pygame.image.load(key[0]),
                                                            (self.tile_width, self.tile_height)),
                                     (self.left + (x * self.tile_width), self.top + (y * self.tile_height)))
@@ -145,11 +146,56 @@ class Map:
 
 
 class Doors(pygame.sprite.Sprite):  # класс дверей. Здесь прописаны все или почти все функции для взаимодействия с ними
-    def __init__(self, doors_rects: list, tile_width: int, tile_height: int, pairs_doors_rects: dict):
+    def __init__(self, level_map: int, doors_rects: list, tile_width: int, tile_height: int, pairs_doors_rects: dict):
         super().__init__()
-
+        if level_map == 3:
+            self.names_doors_level = {
+                'name1': [pygame.Rect(37 * tile_width, 31 * tile_height, tile_width, tile_height),
+                          pygame.Rect(38 * tile_width, 31 * tile_height, tile_width, tile_height)],
+                'name2': [pygame.Rect(22 * tile_width, 21 * tile_height, tile_width, tile_height),
+                          pygame.Rect(22 * tile_width, 20 * tile_height, tile_width, tile_height)],
+                'name3': [pygame.Rect(49 * tile_width, 23 * tile_height, tile_width, tile_height),
+                          pygame.Rect(49 * tile_width, 24 * tile_height, tile_width, tile_height),
+                          pygame.Rect(49 * tile_width, 25 * tile_height, tile_width, tile_height)],
+                'name4': [pygame.Rect(18 * tile_width, 11 * tile_height, tile_width, tile_height),
+                          pygame.Rect(18 * tile_width, 12 * tile_height, tile_width, tile_height),
+                          pygame.Rect(18 * tile_width, 13 * tile_height, tile_width, tile_height)],
+                'name5': [pygame.Rect(7 * tile_width, 34 * tile_height, tile_width, tile_height),
+                          pygame.Rect(8 * tile_width, 34 * tile_height, tile_width, tile_height)],
+                'name6': [pygame.Rect(51 * tile_width, 53 * tile_height, tile_width, tile_height),
+                          pygame.Rect(51 * tile_width, 54 * tile_height, tile_width, tile_height)],
+                'name7': [pygame.Rect(17 * tile_width, 42 * tile_height, tile_width, tile_height),
+                          pygame.Rect(18 * tile_width, 42 * tile_height, tile_width, tile_height)],
+                'name8': [pygame.Rect(7 * tile_width, 49 * tile_height, tile_width, tile_height),
+                          pygame.Rect(8 * tile_width, 49 * tile_height, tile_width, tile_height)]
+            }
+        if level_map == 2:
+            self.names_doors_level = {
+                'name1': [pygame.Rect(43 * tile_width, 33 * tile_height, tile_width, tile_height),
+                          pygame.Rect(43 * tile_width, 34 * tile_height, tile_width, tile_height)],
+                'name2': [pygame.Rect(33 * tile_width, 24 * tile_height, tile_width, tile_height),
+                          pygame.Rect(34 * tile_width, 24 * tile_height, tile_width, tile_height)],
+                'name3': [pygame.Rect(33 * tile_width, 43 * tile_height, tile_width, tile_height),
+                          pygame.Rect(34 * tile_width, 43 * tile_height, tile_width, tile_height)]
+            }
+        if level_map == 1:
+            self.names_doors_level = {
+                'name1': [pygame.Rect(33 * tile_width, 12 * tile_height, tile_width, tile_height),
+                          pygame.Rect(33 * tile_width, 13 * tile_height, tile_width, tile_height)],
+                'name2': [pygame.Rect(44 * tile_width, 12 * tile_height, tile_width, tile_height),
+                          pygame.Rect(44 * tile_width, 13 * tile_height, tile_width, tile_height)],
+                'name3': [pygame.Rect(18 * tile_width, 15 * tile_height, tile_width, tile_height),
+                          pygame.Rect(18 * tile_width, 14 * tile_height, tile_width, tile_height)],
+                'name6': [pygame.Rect(33 * tile_width, 12 * tile_height, tile_width, tile_height),
+                          pygame.Rect(33 * tile_width, 13 * tile_height, tile_width, tile_height)],
+                'name4': [pygame.Rect(27 * tile_width, 39 * tile_height, tile_width, tile_height),
+                          pygame.Rect(27 * tile_width, 40 * tile_height, tile_width, tile_height),
+                          pygame.Rect(27 * tile_width, 41 * tile_height, tile_width, tile_height)],
+                'name5': [pygame.Rect(47 * tile_width, 39 * tile_height, tile_width, tile_height),
+                          pygame.Rect(47 * tile_width, 40 * tile_height, tile_width, tile_height),
+                          pygame.Rect(47 * tile_width, 41 * tile_height, tile_width, tile_height)]
+            }
         self.tile_width, self.tile_height = tile_width, tile_height
-
         self.pair_doors_rects = pairs_doors_rects
         self.rectangles_doors = doors_rects.copy()
         self.zone_doors_rects = []  # Этот список - список зон дверей. Зона двери - это просто прямоугольник побольше,
@@ -173,18 +219,37 @@ class Doors(pygame.sprite.Sprite):  # класс дверей. Здесь про
             return True
         return False
 
-    def removing_closed_door(self, door_zone):  # Этот метод нужен для того, чтобы удалять из списка обычных дверей
+    def removing_closed_door(self, door_zone, name_keys_taken: list, id_backpack: int):
+        name_key = None
+        for el in name_keys_taken:
+            if id_backpack == el[1]:
+                name_key = el[0]
+        # Этот метод нужен для того, чтобы удалять из списка обычных дверей
         # - открытые, следовательно, во время проверки столкновений с дверьми, открытые двери мы проверять не будем,
         # тк они будут удалены
         for door in self.rectangles_doors:
-            if door.colliderect(door_zone):
-                self.open_doors.append([door, *self.pair_doors_rects[(str(door))]])  # добавляем открытую дверь в список
-                # этот список используется в update
-                self.rectangles_doors.remove(door)
+            if door.colliderect(door_zone):  # проверяем пересечение
+                flag = False
+                for el in self.names_doors_level.values():
+                    if door in el:
+                        flag = True
+                if flag:
+                    for name in self.names_doors_level.keys():
+                        if door in self.names_doors_level[name]:  # если дверь есть в списке ключа
+                            if name == name_key:  # проверяем есть ли такой ключ, под таким же именем,
+                                # в списке подобранных ключей
+                                # добавляем открытую дверь в список
+                                self.open_doors.append([door, *self.pair_doors_rects[(str(door))]])
+                                # этот список используется в update
+                                self.rectangles_doors.remove(door)
+                else:
+                    # добавляем открытую дверь в список
+                    self.open_doors.append([door, *self.pair_doors_rects[(str(door))]])
+                    # этот список используется в update
+                    self.rectangles_doors.remove(door)
 
     def update(self, screen):
         # отрисовываем все открытые двери
-
         for el in self.open_doors:
             image = pygame.image.load(os.path.join('app/view/images/', self.pair_doors[el[1]]))
             screen.blit(pygame.transform.scale(image, (self.tile_width, self.tile_height)), (el[0].x, el[0].y))
@@ -198,20 +263,23 @@ class Doors(pygame.sprite.Sprite):  # класс дверей. Здесь про
 
 
 class KeysDoors:
-    def __init__(self, screen, keys: list, tile_width: int, tile_height: int):
+    def __init__(self, keys: dict, tile_width: int, tile_height: int):
         self.tile_width, self.tile_height = tile_width, tile_height
-
-        self.rects_keys = keys.copy()
+        self.keys = keys.copy()
+        self.keys_rects = self.keys.values()
         self.zone_keys_rects = []  # зона для подбора ключей
-
-        for rect in self.rects_keys:
+        self.names = []
+        for rect in self.keys_rects:
             self.zone_keys_rects.append(pygame.Rect([rect.x - 6, rect.y - 6, rect.w + 10, rect.h + 10]))
         self.keys_taken = []  # подобранные ключи
 
     def add_taken_key(self, key_zone):  # Просто добавляем подобранный ключ в список
-        for key in self.rects_keys:
+        for key in self.keys_rects:
             if key.colliderect(key_zone) and key not in self.keys_taken:
-                self.keys_taken.append(key)
+                for k in self.keys:
+                    if self.keys[k] == key:
+                        self.keys_taken.append(key)
+                        self.names.append(k)
                 return True
         return False
 
@@ -282,11 +350,10 @@ class Interactions:  # это класс особых "событий", кото
         self.tile_width, self.tile_height = tile_width, tile_height
 
         self.rects_interaction = rects.copy()
-        print(self.rects_interaction)
         self.zone_rects_interaction = []  # список, зона прямоугольников (взаимодействий/событий)
         for rect in self.rects_interaction:
-            self.zone_rects_interaction.append(pygame.Rect([rect.x - 11, rect.y - 11,
-                                                            rect.w + 20, rect.h + 20]))
+            self.zone_rects_interaction.append(pygame.Rect([rect.x - 26, rect.y - 26,
+                                                            rect.w + 26, rect.h + 26]))
         self.active = []
 
     def update(self, screen):

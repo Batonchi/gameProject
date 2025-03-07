@@ -70,8 +70,6 @@ class ShowTextContent:
                         screen.blit(pygame.image.load(self.view_text_background.get_tile_image(j, i, 0)[0]),
                                     self.xy_start)
 
-
-
     # def draw_tile_adapt_frame(self, screen: pygame.Surface):
     #     tile_map = pytmx.TiledMap('for_dialog')
     #     for y in range(0, 3):

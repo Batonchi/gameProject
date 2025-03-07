@@ -136,6 +136,7 @@ class BackPack:
         self.is_show = True
         self.rest = [0 for _ in range(self.volume)]
         self.cells = []
+        self.items = []
 
     def take(self, i: int, item: Item):
         self.remove_item(i)
@@ -144,7 +145,8 @@ class BackPack:
         #     pygame.image.load(os.path.abspath(f'app\\map\\icons\\{item.inf.get('image')}.png')),
         #     (self.width_cell // 3, self.height_cell // 2))
         self.cells[i].setText(item.item_name)
-        self.cells[i].font = pygame.font.SysFont('Arial-black', 30, bold=500)
+        self.items.append((item.item_name, i))
+        self.cells[i].font = pygame.font.SysFont('Arial-black', 15, bold=500)
 
     def get_last_free_cell(self) -> int | None:
         for cell in range(0, self.volume):

@@ -190,7 +190,7 @@ class RenderingOtherWindow:
                 'buttons_column_groups': {
                     1: {
                         'xy_start': (self.w_w // 3, self.w_h // 1.2),
-                        'width_height': (self.w_w // 3, self.w_h // 12),
+                        'width_height': (self.w_w // 3, self.w_h // 14),
                         'gap': 10,
                         'buttons': {
                             1: ('exit_to_menu-btn', True)
@@ -204,7 +204,7 @@ class RenderingOtherWindow:
                 'buttons_column_groups': {
                     1: {
                         'xy_start': (self.w_w // 3, self.w_h // 1.2),
-                        'width_height': (self.w_w // 3, self.w_h // 12),
+                        'width_height': (self.w_w // 3, self.w_h // 14),
                         'gap': 10,
                         'buttons': {
                             1: ('exit_to_menu-btn',)
@@ -418,12 +418,12 @@ class RenderingOtherWindow:
                                          tile_height=self.player_w_and_h[last_name_sim][1])
         backpack = BackPack(15, game_model_character)
         camera = PlayerCamera(game_model_character, 10, 10)
-        doors = Doors(map_game.doors, tile_width=self.player_w_and_h[last_name_sim][0],
-                      tile_height=self.player_w_and_h[last_name_sim][1],
+        doors = Doors(level_map=int(filename_map[9]), doors_rects=map_game.doors,
+                      tile_width=game_class.w_w // self.w_and_h_for_map[last_name_sim][0],
+                      tile_height=game_class.w_h // self.w_and_h_for_map[last_name_sim][1],
                       pairs_doors_rects=map_game.rects_doors)
-        keys_doors = KeysDoors(self.screen, keys=map_game.keys, tile_width=self.player_w_and_h[last_name_sim][0],
-                               tile_height=self.player_w_and_h[last_name_sim][1]
-                               )
+        keys_doors = KeysDoors(keys=map_game.keys, tile_width=self.player_w_and_h[last_name_sim][0],
+                               tile_height=self.player_w_and_h[last_name_sim][1])
         notes = Notes(rects=map_game.notes, tile_width=self.player_w_and_h[last_name_sim][0],
                       tile_height=self.player_w_and_h[last_name_sim][0])
         interactions = Interactions(rects=map_game.interactions,
@@ -452,20 +452,21 @@ class RenderingOtherWindow:
                         result_k = keys_doors.check_rect_in_zone(game_model_character.rect)
                         result_n = notes.check_rect_in_zone(game_model_character.rect)
                         if result_d[0]:
-                            doors.removing_closed_door(result_d[1])  # если True, удаляем дверь
+                            doors.removing_closed_door(result_d[1], backpack.items, backpack.active_cell_id)
+                            # если True, удаляем дверь
                         if result_k[0]:
-                            if keys_doors.add_taken_key(result_k[1]):
+                            if keys_doors.add_taken_key(result_k[1]) and result_k[1] not in keys_doors.keys_taken:
                                 free_cell = backpack.get_last_free_cell()
                                 if free_cell is not None:
-                                    backpack.take(free_cell, Item('hi',
+                                    backpack.take(free_cell, Item(f'{keys_doors.names[-1]}',
                                                                   {'image': 'key'},
                                                                   lambda: print('hi')))
                         if result_n[0]:
-                            if notes.add_taken_note(result_n[1]):
+                            if notes.add_taken_note(result_n[1]) and result_n[1] not in notes.notes_taken:
                                 free_cell = backpack.get_last_free_cell()
                                 if free_cell is not None:
                                     data_for_note = ''  # здесь поолучаем текст из БД для записки
-                                    backpack.take(free_cell, Item('hгi',
+                                    backpack.take(free_cell, Item('note',
                                                                   {'image': 'note'},
                                                                   lambda: print('hi')))
                     if event.key == pygame.K_LEFT:
@@ -481,12 +482,12 @@ class RenderingOtherWindow:
                         game_class.render_other_window_handler.render('pause_game')
                 if event.type == pygame.K_f:
                     result_i = interactions.check_rect_in_zone(game_model_character.rect)
-                    result_npc = game_model_character.check_rect_in_zone(game_model_character.rect, npc_level)
+                    # result_npc = game_model_character.check_rect_in_zone(game_model_character.rect, npc_level)
                     if result_i[0]:
                         # вот здесь мы начинаем диалог с нпс или комментарий ГГ
                         pass
-                    if result_npc[0]:
-                        pass
+                    # if result_npc[0]:
+                    #     pass
             #
             result_i = interactions.check_rect_in_zone(game_model_character.rect)  # если игрок заходит в зону "события"
             # Добавляем это событие/взаимодействие в список активных. После обновляем
