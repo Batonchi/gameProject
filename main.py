@@ -38,12 +38,27 @@ class ErrorWidget:
         screen.blit(image, (self.pos[0], self.pos[1]))
 
 
+class Cross:
+    def __init__(self):
+        self.replicas = ['ТвоюБогаДушуМать!!',  'Боже, дай мне сил',
+                         'Бог видит и слышит, но, похоже, не всегда отвечает.', 'Боже, где я?',
+                         'Скучно каждый раз к Богу обращаться: Андрей, дай мне сил!!',
+                         'В нашем культе не принято теряться',
+                         'С крестом в кармане — куда угодно! Хоть в ад, хоть в рай!',
+                         'Заблудился в жизни? Крестик в руках — компас не потеряешь!']  # фразы. Типо прикольно
+
+    def show_text(self, screen, alpha, text):  # показывает текст в верхем левом углу
+        font = pygame.font.SysFont('Arial', 20)
+        text_surface = font.render(text, True, (255, 0, 0))
+        text_surface.set_alpha(alpha)  # Устанавливаем уровень прозрачности
+        screen.blit(text_surface, (0, 5))
+
+
 class Game:
     def __init__(self, name: str):
         self.name = name
 
         pygame.init()
-
         pygame.mixer.init()
 
         self.screen = pygame.display.set_mode((0, 0), pygame.RESIZABLE, pygame.SRCALPHA)
@@ -58,8 +73,8 @@ class Game:
         pygame.mixer.music.play(-1, 0.0)
 
         if game_session is not None:
-            (self.render_other_window_handler.types_of_window['main_menu']
-            ['buttons_column_groups'][1]['buttons'][1]) = ('continue_game_session-btn', True)
+            (self.render_other_window_handler.types_of_window['main_menu']['buttons_column_groups'][1]['buttons'][1])\
+                = ('continue_game_session-btn', True)
             self.render_other_window_handler.render('main_menu',
                                                     param={'player_name': game_session.player_name,
                                                            'title': self.name})
@@ -208,6 +223,19 @@ class RenderingOtherWindow:
                         'gap': 10,
                         'buttons': {
                             1: ('exit_to_menu-btn',)
+                        }
+                    }
+                },
+                'final_window': {
+                    'caption': 'The end',
+                    'buttons_column_groups': {
+                        1: {
+                            'xy_start': (self.w_w // 3, self.w_h // 1.2),
+                            'width_height': (self.w_w // 3, self.w_h // 12),
+                            'gap': 10,
+                            'buttons': {
+                                1: ('exit_to_menu-btn',)
+                            }
                         }
                     }
                 }
@@ -429,6 +457,7 @@ class RenderingOtherWindow:
         interactions = Interactions(rects=map_game.interactions,
                                     tile_width=self.player_w_and_h[last_name_sim][0],
                                     tile_height=self.player_w_and_h[last_name_sim][1])
+        cross = Cross()
         backpack.render(self.screen, self.w_w, self.w_h)
         text = ShowTextContent(GetText(0, json.dumps({'text': 'hfbk,bdfk,bkbnddkbdfdkjb'})),
                                (0, 0, 0), 20,
@@ -446,6 +475,11 @@ class RenderingOtherWindow:
                 if event.type == pygame.KEYUP:
                     game_model_character.image = game_model_character.images[0]
                 if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_u:
+                        if backpack.active_cell_id == backpack.volume - 1:
+                            map_game.render(self.screen, 0, 0, 30, 10)
+                            replica = random.choice(cross.replicas)
+                            cross.show_text(self.screen, 255, replica)
                     if event.key == pygame.K_e:
                         # локальные переменные, проверяем находится ли игрок в какой-либо зоне
                         result_d = doors.check_rect_in_zone(game_model_character.rect)
@@ -565,10 +599,9 @@ class RenderingOtherWindow:
         if pygame.mixer.music.get_busy() and from_pause:
             pygame.mixer.music.load(os.path.abspath(os.path.join('app\\music', 'melody_3.mp3')))
             pygame.mixer.music.play(-1, 0.0)
-        print(pygame.display.get_caption())
         if game_session is not None:
-            (self.types_of_window['main_menu']
-            ['buttons_column_groups'][1]['buttons'][1]) = ('continue_game_session-btn', True)
+            (self.types_of_window['main_menu']['buttons_column_groups'][1]['buttons'][1])\
+                = ('continue_game_session-btn', True)
             self.render('main_menu', param={'player_name': game_session.player_name,
                                             'title': 'Absolutely Depressive Live'})
         self.render(type_window='main_menu', param={'title': 'Absolutely Depressive Live'})

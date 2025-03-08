@@ -148,6 +148,7 @@ class BackPack:
         self.items.append((item.item_name, i))
         self.cells[i].font = pygame.font.SysFont('Arial-black', 15, bold=500)
 
+
     def get_last_free_cell(self) -> int | None:
         for cell in range(0, self.volume):
             if self.rest[cell] == 0:
@@ -170,6 +171,9 @@ class BackPack:
             self.cells.append(Button(screen, i * (self.width_cell + gap), w_height - self.height_cell, self.width_cell,
                                      self.height_cell, colour=(30, 30, 30), borderColour=(155, 155, 155), radius=10,
                                      borderThickness=1, textColour=(255, 255, 255)))
+            if i == self.volume - 1:
+                self.cells[i].image = pygame.transform.scale(pygame.image.load(os.path.join('app/map/icons/' + 'cross.png')),
+                                                             (30, 30))
             if self.cells[-1].image is None:
                 self.cells[-1].setText('пусто')
         self.do_selected(self.active_cell_id)
