@@ -7,10 +7,10 @@ from app.texts.model import ShowTextContent, GetText
 import app.characters.model
 
 
-class PlayerCamera:
+class PlayerCamera:  # класс камеры игрока
     def __init__(self, target, view_x_zone: int, view_y_zone: int):
-        self.dx = target.x - view_x_zone * target.tile_size[0]
-        self.dy = target.y - view_y_zone * target.tile_size[1]
+        self.dx = target.x - view_x_zone * target.tile_size[0]  # определяем dx
+        self.dy = target.y - view_y_zone * target.tile_size[1]  # определяем dy
         self.view_size = (view_x_zone * 2 * target.tile_size[0] +
                           target.rect.width, view_y_zone * 2 * target.tile_size[1] + target.rect.height)
         self.view_x = view_x_zone
@@ -92,6 +92,7 @@ class Map:
 
                     elif key is not None:
                         count += 1
+                        # даем каждому ключу свое имя + его прямоугольник и вносим в словарь (имя - ключ: rect - value)
                         self.keys[f'name{count}'] = pygame.Rect([x * self.tile_width, y * self.tile_height,
                                                                  self.tile_width, self.tile_height])
                         screen.blit(pygame.transform.scale(pygame.image.load(key[0]),
@@ -119,9 +120,11 @@ class Map:
         return int(x * self.tile_width), int(y * self.tile_height)
 
     def update(self, screen, camera: PlayerCamera):
+        # апдейт карты. Обновляем тот кусок карты, который обхватывает камера игрока
         left_top_point_camera = camera.dx, camera.dy
         right_bottom_point_camera = camera.dx + camera.view_size[0], camera.dy + camera.view_size[1]
         xy_tile_start = self.get_cell_coord(left_top_point_camera)
+        # работа с координатами
         if not xy_tile_start:
             xy_tile_start = (0, 0)
         if xy_tile_start[0] < 0:
@@ -137,7 +140,8 @@ class Map:
             xy_tile_end = (xy_tile_end[0], 0)
         self.render(screen, xy_tile_start[0], xy_tile_start[1],
                     xy_tile_end[0] - xy_tile_start[0] + xy_tile_start[0],
-                    xy_tile_end[1] - xy_tile_start[1] + xy_tile_start[1])
+                    xy_tile_end[1] - xy_tile_start[1] + xy_tile_start[1])  # делаем отрисовку карты в области
+        # определенных координат
 
     def get_cell_coord(self, coors: Tuple[int, int]) -> Tuple[int, int]:
         for x in range(coors[0], coors[0] + self.tile_width):
@@ -163,6 +167,7 @@ class Map:
 class Doors(pygame.sprite.Sprite):  # класс дверей. Здесь прописаны все или почти все функции для взаимодействия с ними
     def __init__(self, level_map: int, doors_rects: list, tile_width: int, tile_height: int, pairs_doors_rects: dict):
         super().__init__()
+        # cловари дверей карт
         if level_map == 3:
             self.names_doors_level = {
                 'name1': [pygame.Rect(37 * tile_width, 31 * tile_height, tile_width, tile_height),

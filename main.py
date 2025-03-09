@@ -511,6 +511,7 @@ class RenderingOtherWindow:
                     game_model_character.image = game_model_character.images[0]
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_u:
+                        # если активная ячейка последняя, т.е крест, то выводим рандомную реплику в верхнем левом углу
                         if backpack.active_cell_id == backpack.volume - 1:
                             map_game.render(self.screen, 0, 0, 30, 10)
                             replica = random.choice(cross.replicas)
@@ -519,7 +520,7 @@ class RenderingOtherWindow:
                         result_i = interactions.check_rect_in_zone(game_model_character.rect)
                         result_npc = map_game.collide_with_npc(game_model_character.rect)
                         if result_i[0]:
-                            get_dialog = self.mind_rects.get((result_i[2].x, result_i[2].y))
+                            get_dialog = self.mind_rects.get((result_i[2].x, result_i[2].y))  # получаем диалог
                             draw_dialog_text.append(get_dialog)
                             draw_dialog = True
                         if result_npc[0]:
@@ -544,10 +545,14 @@ class RenderingOtherWindow:
                         result_k = keys_doors.check_rect_in_zone(game_model_character.rect)
                         result_n = notes.check_rect_in_zone(game_model_character.rect)
                         if result_d[0]:
+                            # подаем в метод removing closed door ячейки рюкзака и активную ячейку
                             if doors.removing_closed_door(result_d[1], backpack.items, backpack.active_cell_id):
+                                # если все окей, то удаляем использованный ключ из рюкзака
                                 backpack.remove_item(backpack.active_cell_id)
                             # если True, удаляем дверь
                         if result_k[0]:
+                            # проверяем что ключ подобран и при этом его нет в списке подобранных (это нужно для того,
+                            # чтобы не было дубляжа ключей в инвентаре
                             if keys_doors.add_taken_key(result_k[1]) and result_k[1] not in keys_doors.keys_taken:
                                 free_cell = backpack.get_last_free_cell()
                                 if free_cell is not None:
@@ -562,6 +567,7 @@ class RenderingOtherWindow:
                                     backpack.take(free_cell, Item('note',
                                                                   {'image': 'note'},
                                                                   lambda: print('hi')))
+                    # при нажатие на стрелки лево/право меняем активную ячейку рюкзака
                     if event.key == pygame.K_LEFT:
                         backpack.do_unselected(backpack.active_cell_id)
                         backpack.previous_item()
@@ -570,9 +576,10 @@ class RenderingOtherWindow:
                         backpack.do_unselected(backpack.active_cell_id)
                         backpack.next_item()
                         backpack.do_selected(backpack.active_cell_id)
+                    # меню паузы, здесь мы скрываем также рюкзак, что логично)
                     if event.key == pygame.K_ESCAPE:  # Для меню паузы
                         backpack.close_backpack()
-                        game_class.render_other_window_handler.render('pause_game')
+                        game_class.render_other_window_handler.render('pause_game')  # отрисовка меню паузы
 
             result_i = interactions.check_rect_in_zone(game_model_character.rect)  # если игрок заходит в зону "события"
             # Добавляем это событие/взаимодействие в список активных. После обновляем
