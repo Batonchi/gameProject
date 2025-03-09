@@ -25,7 +25,7 @@ class ShowTextContent:
                  background_color: Tuple[int, int, int] | Tuple[int, int, int, int],
                  xy_start: Tuple[int, int] | Tuple[float, int],
                  padding: Tuple[int, int, int, int],
-                 border_radius: int = 0, font_weight: int = 700):
+                 border_radius: int = 0, font_weight: int = 700,add_repeat: int = 0):
         self.view_text_background = pytmx.TiledMap(os.path.abspath('app/map/for_dialog.tmx'))
         self.text = text
         self.dialog_link = text.content
@@ -43,6 +43,7 @@ class ShowTextContent:
         self.rect.x = self.xy_start[0] - self.padding[0]
         self.rect.y = self.xy_start[1] - self.padding[1]
         self.border_radius = border_radius
+        self.add_repeat = add_repeat
         self.now_text = self.dialog_link.get('text', None)
 
     def render(self, screen: pygame.Surface):
@@ -64,7 +65,7 @@ class ShowTextContent:
         image = pygame.image.load(os.path.abspath('app/map/white.png'))
         image = pygame.transform.scale(image, (tile_width, tile_height))
         image.set_alpha(100)
-        for y in range(0, repeat):
+        for y in range(0, repeat + self.add_repeat):
             for x in range(0, 100):
                 screen.blit(image, (tile_width * x + self.x_start, tile_height * y + self.y_start))
         if '\n' in self.now_text:
@@ -96,23 +97,3 @@ class ShowTextContent:
         if self.dialog_link is None:
             return False
         return words
-
-    def show_note_window(self, screen: pygame.Surface, w_width: int, w_height: int):
-        running = True
-        while running:
-            for event in pygame.event.get():
-                if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_ESCAPE:
-                        running = False
-            for i in range(0, 3):
-                for j in range(0, 100):
-                    screen.blit(pygame.image.load(self.view_text_background.get_tile_image(j, i, 0)[0]),
-                                self.xy_start)
-
-    # def draw_tile_adapt_frame(self, screen: pygame.Surface):
-    #     tile_map = pytmx.TiledMap('for_dialog')
-    #     for y in range(0, 3):
-    #         for x in range(0, 100):
-
-    def get_text_width(self) -> int:
-        return self.padding[0] + self.rect.width + self.padding[2]

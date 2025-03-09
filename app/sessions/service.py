@@ -44,11 +44,11 @@ class SessionService:
             conn.commit()
 
     @staticmethod
-    def update_place(new_place_id: int, player_name: str):
+    def update_level(level_id: int, player_name: str):
         with Connection() as conn:
             cur = conn.cursor()
-            query = '''UPDATE sessions SET place = ? WHERE player_name = ?'''
-            cur.execute(query, (new_place_id, player_name))
+            query = '''UPDATE sessions SET level_id = ? WHERE player_name = ?'''
+            cur.execute(query, (level_id, player_name))
             conn.commit()
 
     @staticmethod

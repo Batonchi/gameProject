@@ -1,3 +1,5 @@
+from typing import List
+
 from database import Connection
 from app.texts.model import GetText, CreateText
 
@@ -23,6 +25,14 @@ class TextService:
         with Connection() as connection:
             cur = connection.cursor()
             return cur.execute('SELECT text_id FROM texts ORDER BY text_id DESC LIMIT 1;').fetchone()[0]
+
+    @staticmethod
+    def get_texts(st_txt_id: int, end_txt_id: int) -> List[GetText]:
+        with (Connection() as connection):
+            cur = connection.cursor()
+            results = cur.execute(f'''SELECT * FROM texts WHERE text_id >= {st_txt_id} OR text_id <= {end_txt_id}'''
+                                  ).fetchall()
+            return [GetText(text[0], text[1]) for text in results]
 
 
 d_A1 = {

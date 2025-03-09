@@ -44,6 +44,7 @@ class GetCharacters(GetCharacter):
                     'permissions': data.get('permissions', None),
                     'is_npc': True,
                     'dialog_id': character_inf[2].get('dialog_id', None),
+                    'dialog_ids': character_inf[2].get('dialog_ids', None),
                     'image_name': character_inf[2].get('path_to_skin_image', None),
                     'x': character_inf[1][0],
                     'y': character_inf[1][1],

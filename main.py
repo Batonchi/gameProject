@@ -58,7 +58,7 @@ class Game:
 
         if game_session is not None:
             (self.render_other_window_handler.types_of_window['main_menu']
-             ['buttons_column_groups'][1]['buttons'][1]) = ('continue_game_session-btn', True)
+            ['buttons_column_groups'][1]['buttons'][1]) = ('continue_game_session-btn', True)
             self.render_other_window_handler.render('main_menu',
                                                     param={'player_name': game_session.player_name,
                                                            'title': self.name})
@@ -450,6 +450,19 @@ class RenderingOtherWindow:
                                tile_height=self.player_w_and_h[last_name_sim][1])
         notes = Notes(rects=map_game.notes, tile_width=self.player_w_and_h[last_name_sim][0],
                       tile_height=self.player_w_and_h[last_name_sim][0])
+        if params[1].level_id == 0:
+            SessionService.update_inf({'no_use_notes': [i for i in range(33, 33 + len(notes.rects_notes))]},
+                                      params[0].player_name)
+        elif params[1].level_id == 1:
+            SessionService.update_inf({'no_use_notes': [i for i in range(37, 37 + len(notes.rects_notes))]},
+                                      params[0].player_name)
+        else:
+            SessionService.update_inf({'no_use_notes': [i for i in range(40, 40 + len(notes.rects_notes))]},
+                                      params[0].player_name)
+        note_text_id = {}
+        notes_text_ids = json.loads(SessionService.get_last_session().inf)['no_use_notes']
+        for rect in notes.zone_rects_notes:
+            note_text_id[(rect.x, rect.y)] = notes_text_ids[notes.zone_rects_notes.index(rect)]
         interactions = Interactions(rects=map_game.interactions,
                                     tile_width=self.player_w_and_h[last_name_sim][0],
                                     tile_height=self.player_w_and_h[last_name_sim][1])
@@ -457,7 +470,6 @@ class RenderingOtherWindow:
             for rect in interactions.rects_interaction:
                 self.mind_rects[(rect.x, rect.y)] = (self.for_second_level_mind_hero
                                                      .pop(randint(0, len(self.for_second_level_mind_hero) - 1)))
-            print(self.mind_rects)
         backpack.render(self.screen, self.w_w, self.w_h)
         npc = []
         npc_xy = []
@@ -481,6 +493,8 @@ class RenderingOtherWindow:
                                             16, (0, 0, 0),
                                             (0, int(self.w_h // 1.3)),
                                             (10, 10, 10, 10))]
+        ready_to_transport = False
+        num_of_join_dialogs = 0
         while running:
             pygame.mouse.set_visible(False)
             if not backpack.is_show:
@@ -493,6 +507,24 @@ class RenderingOtherWindow:
                 if event.type == pygame.KEYUP:
                     game_model_character.image = game_model_character.images[0]
                 if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_u:
+                        backpack_elem = backpack.rest[backpack.active_cell_id]
+                        if backpack_elem is not None and backpack_elem.item_name == 'note':
+                            get_text = backpack_elem.inf['text_note']
+                            text = get_text.content['text'].split()
+                            len_text = len(get_text.content['text'].split())
+                            if len_text > 8:
+                                res_text = []
+                                full_del = len_text // 8
+                                for i in range(0, full_del):
+                                    res_text.append(' '.join(text[i * 8:i * 8 + 8]))
+                                res_text.append(' '.join(text[full_del * 8:]))
+                                backpack_elem.inf['text_note'].content['text'] = '\n'.join(res_text)
+                            draw_dialog_text.append(ShowTextContent(get_text, (255, 255, 255),
+                                                                    16, (0, 0, 0),
+                                                                    (0, int(self.w_h // 1.35)),
+                                                                    (10, 10, 10, 10), add_repeat=5))
+                            draw_dialog = True
                     if event.key == pygame.K_f:
                         result_i = interactions.check_rect_in_zone(game_model_character.rect)
                         result_npc = map_game.collide_with_npc(game_model_character.rect)
@@ -508,14 +540,39 @@ class RenderingOtherWindow:
                                     npc_model = one_npc
                                     break
                             if npc_model is not None:
-                                get_text = (TextService
-                                            .get_text_by_id(int(npc_model.character.inf['dialog_id'])))
-                                dialog_class = ShowTextContent(get_text, (255, 255, 255),
-                                                               16, (0, 0, 0),
-                                                               (0, int(self.w_h // 1.3)),
-                                                               (10, 10, 10, 10))
-                                draw_dialog_text.append(dialog_class)
-                                draw_dialog = True
+                                if npc_model.character.get_info().get('dialog_ids'):
+                                    res_data = []
+                                    for dialog_id in npc_model.character.get_info().get('dialog_ids'):
+                                        get_text = TextService.get_text_by_id(dialog_id)
+                                        res_data.append(ShowTextContent(get_text, (255, 255, 255),
+                                                                        16, (0, 0, 0),
+                                                                        (0, int(self.w_h // 1.3)),
+                                                                        (10, 10, 10, 10)))
+                                    if len(res_data) == 2:
+                                        draw_dialog = True
+                                        num_of_join_dialogs = 2
+                                        SessionService.update_level(params[1].level_id + 1, params[0].player_name)
+                                    else:
+                                        num_of_join_dialogs = len(res_data)
+                                        get_text = TextService.get_text_by_id(author_words_id[3])
+                                        res_data.append(ShowTextContent(get_text, (255, 255, 255),
+                                                                        16, (0, 0, 0),
+                                                                        (0, int(self.w_h // 1.3)),
+                                                                        (10, 10, 10, 10)))
+                                        SessionService.update_level(params[1].level_id + 1, params[0].player_name)
+                                        draw_dialog = True
+                                    draw_dialog_text.append(res_data)
+                                else:
+                                    if npc_model.character.get_info()['dialog_id'] == 8:
+                                        SessionService.update_level(params[1].level_id + 1, params[0].player_name)
+                                    get_text = (TextService
+                                                .get_text_by_id(int(npc_model.character.inf['dialog_id'])))
+                                    dialog_class = ShowTextContent(get_text, (255, 255, 255),
+                                                                   16, (0, 0, 0),
+                                                                   (0, int(self.w_h // 1.3)),
+                                                                   (10, 10, 10, 10))
+                                    draw_dialog_text.append(dialog_class)
+                                    draw_dialog = True
                     if event.key == pygame.K_e:
                         # локальные переменные, проверяем находится ли игрок в какой-либо зоне
                         result_d = doors.check_rect_in_zone(game_model_character.rect)
@@ -536,9 +593,11 @@ class RenderingOtherWindow:
                             if notes.add_taken_note(result_n[1]) and result_n[1] not in notes.notes_taken:
                                 free_cell = backpack.get_last_free_cell()
                                 if free_cell is not None:
-                                    data_for_note = ''  # здесь поолучаем текст из БД для записки
+                                    data_for_note = note_text_id[(result_n[1].x, result_n[1].y)]
+                                    data_for_note = TextService.get_text_by_id(data_for_note)
+                                    # здесь поолучаем текст из БД для записки
                                     backpack.take(free_cell, Item('note',
-                                                                  {'image': 'note'},
+                                                                  {'image': 'note', 'text_note': data_for_note},
                                                                   lambda: print('hi')))
                     if event.key == pygame.K_LEFT:
                         backpack.do_unselected(backpack.active_cell_id)
@@ -606,10 +665,36 @@ class RenderingOtherWindow:
             for one_npc in npc:
                 self.screen.blit(one_npc.image, (one_npc.x * map_game.tile_width, one_npc.y * map_game.tile_height))
             if draw_dialog:
-                if not draw_dialog_text[-1].show_dialog_window(self.screen, map_game.tile_width, map_game.tile_height,
-                                                               10):
-                    draw_dialog = False
-                    map_game.render(game_class.screen, 0, 0, 70, 70)
+                if isinstance(draw_dialog_text[-1], list):
+                    alist = list(reversed(draw_dialog_text[-1]))
+                    if not alist[num_of_join_dialogs - 1].show_dialog_window(self.screen,
+                                                                             map_game.tile_width,
+                                                                             map_game.tile_height,
+                                                                             10):
+                        map_game.render(game_class.screen, 0, 0, 70, 70)
+                        num_of_join_dialogs -= 1
+                    if num_of_join_dialogs == 0:
+                        draw_dialog = False
+                        ready_to_transport = True
+                else:
+                    if not draw_dialog_text[-1].show_dialog_window(self.screen, map_game.tile_width,
+                                                                   map_game.tile_height,
+                                                                   10):
+                        draw_dialog = False
+                        map_game.render(game_class.screen, 0, 0, 70, 70)
+                        if params[0].level_id - SessionService.get_last_session().level_id != 0:
+                            ready_to_transport = True
+            if ready_to_transport:
+                backpack.close_backpack()
+                try:
+                    self.render_level_map_with_param(game_class, params=(SessionService.get_last_session(),
+                                                                         LevelService
+                                                                         .get_level_by_id(SessionService
+                                                                                          .get_last_session().
+                                                                                          level_id), params[2]))
+                except Exception as e:
+                    SessionService.update_level(0, params[0].player_name)
+                    self.show_final_window()
             pygame.event.pump()
             pygame.display.flip()
             pygame.display.update()
@@ -635,7 +720,7 @@ class RenderingOtherWindow:
             pygame.mixer.music.play(-1, 0.0)
         if game_session is not None:
             (self.types_of_window['main_menu']
-             ['buttons_column_groups'][1]['buttons'][1]) = ('continue_game_session-btn', True)
+            ['buttons_column_groups'][1]['buttons'][1]) = ('continue_game_session-btn', True)
             self.render('main_menu', param={'player_name': game_session.player_name,
                                             'title': 'Absolutely Depressive Live'})
         self.render(type_window='main_menu', param={'title': 'Absolutely Depressive Live'})
@@ -668,8 +753,10 @@ class OnClickFunctions:
                 TextService.save(CreateText(el[0]), el[1])
             with open('notes_text.txt', 'r', encoding='utf-8') as f:
                 for text in f.readlines():
-                    TextService.save(CreateText({'text': text, 'next': None}), TextService.get_last_id() + 1)
+                    if text != '\n':
+                        TextService.save(CreateText({'text': text, 'next': None}), TextService.get_last_id() + 1)
         create_session = SessionService.create(player_name)
+        SessionService.update_inf({'no_use_notes': [i for i in range(33, 45)]}, player_name)
         if create_session is not None:
             return ErrorWidget(create_session[1], 1000, 100, (0, 0))
         CharacterService.create(CreateCharacter(character_name=player_name, info={
@@ -695,6 +782,7 @@ class OnClickFunctions:
     @staticmethod
     def continue_game_session(player_name: str) -> Tuple[GetSession, Level, GetCharacter] or ErrorWidget:
         get_session = SessionService.get_session_by_player_name(player_name)
+        SessionService.update_inf({'no_use_notes': [i for i in range(33, 45)]}, player_name)
         if get_session is None:
             return ErrorWidget(get_session[1], 1000, 100, (0, 0))
         get_character = CharacterService.get_character_by_name(player_name)

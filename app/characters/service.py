@@ -24,9 +24,9 @@ class CharacterService:
             return GetCharacter(result[0], result[1], result[2])
 
     @staticmethod
-    def drop_character_by_id(character_id: int):
+    def drop_character_by_name(character_name: str):
         with Connection() as conn:
-            conn.cursor().execute('''DELETE FROM characters WHERE character_id = ?''', (character_id,))
+            conn.cursor().execute('''DELETE FROM characters WHERE character_name = ?''', (character_name,))
             conn.commit()
 
     @staticmethod
