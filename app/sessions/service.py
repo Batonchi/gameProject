@@ -8,9 +8,11 @@ from database import Connection
 class SessionService:
     @staticmethod
     def get_name_player_and_date():
+        # получаем из бд имя игрока и дату старта его игры
         with Connection() as conn:
             cur = conn.cursor()
             try:
+                # запрос
                 res = cur.execute('SELECT player_name, date_start FROM sessions')
             except sqlite3.IntegrityError as e:
                 return False, e

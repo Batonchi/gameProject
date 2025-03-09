@@ -37,6 +37,22 @@ class ErrorWidget:
         screen.blit(image, (self.pos[0], self.pos[1]))
 
 
+class Cross:
+    def __init__(self):
+        self.replicas = ['ТвоюБогаДушуМать!!',  'Боже, дай мне сил',
+                         'Бог видит и слышит, но, похоже, не всегда отвечает.', 'Боже, где я?',
+                         'Скучно каждый раз к Богу обращаться: Андрей, дай мне сил!!',
+                         'В нашем культе не принято теряться',
+                         'С крестом в кармане — куда угодно! Хоть в ад, хоть в рай!',
+                         'Заблудился в жизни? Крестик в руках — компас не потеряешь!']  # фразы. Типо прикольно
+
+    def show_text(self, screen, alpha, text):  # показывает текст в верхем левом углу
+        font = pygame.font.SysFont('Arial', 20)
+        text_surface = font.render(text, True, (255, 0, 0))
+        text_surface.set_alpha(alpha)  # Устанавливаем уровень прозрачности
+        screen.blit(text_surface, (0, 5))
+
+
 class Game:
     def __init__(self, name: str):
         self.name = name
@@ -466,6 +482,7 @@ class RenderingOtherWindow:
         interactions = Interactions(rects=map_game.interactions,
                                     tile_width=self.player_w_and_h[last_name_sim][0],
                                     tile_height=self.player_w_and_h[last_name_sim][1])
+        cross = Cross()
         if self.mind_rects is not None:
             for rect in interactions.rects_interaction:
                 self.mind_rects[(rect.x, rect.y)] = (self.for_second_level_mind_hero
@@ -508,23 +525,28 @@ class RenderingOtherWindow:
                     game_model_character.image = game_model_character.images[0]
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_u:
-                        backpack_elem = backpack.rest[backpack.active_cell_id]
-                        if backpack_elem is not None and backpack_elem.item_name == 'note':
-                            get_text = backpack_elem.inf['text_note']
-                            text = get_text.content['text'].split()
-                            len_text = len(get_text.content['text'].split())
-                            if len_text > 8:
-                                res_text = []
-                                full_del = len_text // 8
-                                for i in range(0, full_del):
-                                    res_text.append(' '.join(text[i * 8:i * 8 + 8]))
-                                res_text.append(' '.join(text[full_del * 8:]))
-                                backpack_elem.inf['text_note'].content['text'] = '\n'.join(res_text)
-                            draw_dialog_text.append(ShowTextContent(get_text, (255, 255, 255),
-                                                                    16, (0, 0, 0),
-                                                                    (0, int(self.w_h // 1.35)),
-                                                                    (10, 10, 10, 10), add_repeat=5))
-                            draw_dialog = True
+                        if backpack.active_cell_id == backpack.volume - 1:
+                            map_game.render(self.screen, 0, 0, 30, 10)
+                            replica = random.choice(cross.replicas)
+                            cross.show_text(self.screen, 255, replica)
+                        else:
+                            backpack_elem = backpack.rest[backpack.active_cell_id]
+                            if backpack_elem is not None and backpack_elem.item_name == 'note':
+                                get_text = backpack_elem.inf['text_note']
+                                text = get_text.content['text'].split()
+                                len_text = len(get_text.content['text'].split())
+                                if len_text > 8:
+                                    res_text = []
+                                    full_del = len_text // 8
+                                    for i in range(0, full_del):
+                                        res_text.append(' '.join(text[i * 8:i * 8 + 8]))
+                                    res_text.append(' '.join(text[full_del * 8:]))
+                                    backpack_elem.inf['text_note'].content['text'] = '\n'.join(res_text)
+                                draw_dialog_text.append(ShowTextContent(get_text, (255, 255, 255),
+                                                                        16, (0, 0, 0),
+                                                                        (0, int(self.w_h // 1.35)),
+                                                                        (10, 10, 10, 10), add_repeat=5))
+                                draw_dialog = True
                     if event.key == pygame.K_f:
                         result_i = interactions.check_rect_in_zone(game_model_character.rect)
                         result_npc = map_game.collide_with_npc(game_model_character.rect)
@@ -579,10 +601,14 @@ class RenderingOtherWindow:
                         result_k = keys_doors.check_rect_in_zone(game_model_character.rect)
                         result_n = notes.check_rect_in_zone(game_model_character.rect)
                         if result_d[0]:
+                            # подаем в метод removing closed door ячейки рюкзака и активную ячейку
                             if doors.removing_closed_door(result_d[1], backpack.items, backpack.active_cell_id):
+                                # если все окей, то удаляем использованный ключ из рюкзака
                                 backpack.remove_item(backpack.active_cell_id)
                             # если True, удаляем дверь
                         if result_k[0]:
+                            # проверяем что ключ подобран и при этом его нет в списке подобранных (это нужно для того,
+                            # чтобы не было дубляжа ключей в инвентаре
                             if keys_doors.add_taken_key(result_k[1]) and result_k[1] not in keys_doors.keys_taken:
                                 free_cell = backpack.get_last_free_cell()
                                 if free_cell is not None:
@@ -599,6 +625,7 @@ class RenderingOtherWindow:
                                     backpack.take(free_cell, Item('note',
                                                                   {'image': 'note', 'text_note': data_for_note},
                                                                   lambda: print('hi')))
+                    # при нажатие на стрелки лево/право меняем активную ячейку рюкзака
                     if event.key == pygame.K_LEFT:
                         backpack.do_unselected(backpack.active_cell_id)
                         backpack.previous_item()
@@ -607,9 +634,10 @@ class RenderingOtherWindow:
                         backpack.do_unselected(backpack.active_cell_id)
                         backpack.next_item()
                         backpack.do_selected(backpack.active_cell_id)
+                    # меню паузы, здесь мы скрываем также рюкзак, что логично)
                     if event.key == pygame.K_ESCAPE:  # Для меню паузы
                         backpack.close_backpack()
-                        game_class.render_other_window_handler.render('pause_game')
+                        game_class.render_other_window_handler.render('pause_game')  # отрисовка меню паузы
 
             result_i = interactions.check_rect_in_zone(game_model_character.rect)  # если игрок заходит в зону "события"
             # Добавляем это событие/взаимодействие в список активных. После обновляем
