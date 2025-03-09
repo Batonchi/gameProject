@@ -74,7 +74,7 @@ class Game:
 
         if game_session is not None:
             (self.render_other_window_handler.types_of_window['main_menu']
-            ['buttons_column_groups'][1]['buttons'][1]) = ('continue_game_session-btn', True)
+             ['buttons_column_groups'][1]['buttons'][1]) = ('continue_game_session-btn', True)
             self.render_other_window_handler.render('main_menu',
                                                     param={'player_name': game_session.player_name,
                                                            'title': self.name})
