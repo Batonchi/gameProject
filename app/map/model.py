@@ -154,10 +154,10 @@ class Map:
     def collide_with_npc(self, player_rect):  # коллайд со стенами
         # Здесь, мы просто проверяем есть ли какие-либо пересечения со всеми стенами, если да - возвращаем True
         for npc_rect in self.npc_rects:
-            if player_rect.colliderect(npc_rect):
+            rect = pygame.Rect(npc_rect.x - 30, npc_rect.y - 30, self.tile_width + 60, self.tile_height + 60)
+            if player_rect.colliderect(rect):
                 return [True, npc_rect]
         return [False]
-
 
 
 class Doors(pygame.sprite.Sprite):  # класс дверей. Здесь прописаны все или почти все функции для взаимодействия с ними
@@ -355,8 +355,9 @@ class Interactions:  # это класс особых "событий", кото
     def check_rect_in_zone(self, player_rect: pygame.Rect):  # проверяем, находится ли игрок в зоне прямугольников,
         # если да - True
         for zone_interaction in self.zone_rects_interaction:
-            if player_rect.colliderect(zone_interaction):
-                return [True, zone_interaction]
+            for rect in self.rects_interaction:
+                if player_rect.colliderect(zone_interaction) and player_rect.colliderect(rect):
+                    return [True, zone_interaction, rect]
         return [False]
 
     def add_active(self, rect_zone):  # если игрок хотя бы один раз зашел в зону "события", добавляем в список

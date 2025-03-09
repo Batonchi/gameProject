@@ -6,6 +6,7 @@ import pygame.camera
 import pygame_widgets
 
 from app.characters.service import CharacterService, npc_inform
+from random import randint
 from database import create_database, reset_bd
 from typing import Tuple
 from pygame_widgets.textbox import TextBox
@@ -68,6 +69,8 @@ class Game:
 
 class RenderingOtherWindow:
     def __init__(self, screen: pygame.surface.Surface, w_w: int, w_h: int, link: Game):
+        self.mind_rects = None
+        self.for_second_level_mind_hero = None
         self.player_w_and_h = None
         self.w_and_h_for_map = None
         self.screen = screen
@@ -400,6 +403,12 @@ class RenderingOtherWindow:
                        font=pygame.font.SysFont('Arial-black', self.base_text_box_arguments['fontSize'], 700))
 
     def render_level_map_with_param(self, game_class: Game, params: Tuple[GetSession, Level, GetCharacter]):
+        if params[1].level_id == 1:
+            self.for_second_level_mind_hero = [ShowTextContent(TextService.get_text_by_id(text_id), (255, 255, 255),
+                                                               16, (0, 0, 0),
+                                                               (0, int(self.w_h // 1.3)),
+                                                               (10, 10, 10, 10)) for text_id in mind_gg_id]
+            self.mind_rects = {}
         pygame.mixer.music.load(os.path.abspath(os.path.join('app\\music', 'melody_4.mp3')))
         pygame.mixer.music.play(-1, 0.0)
         for button in self.all_buttons:
@@ -444,6 +453,11 @@ class RenderingOtherWindow:
         interactions = Interactions(rects=map_game.interactions,
                                     tile_width=self.player_w_and_h[last_name_sim][0],
                                     tile_height=self.player_w_and_h[last_name_sim][1])
+        if self.mind_rects is not None:
+            for rect in interactions.rects_interaction:
+                self.mind_rects[(rect.x, rect.y)] = (self.for_second_level_mind_hero
+                                                     .pop(randint(0, len(self.for_second_level_mind_hero) - 1)))
+            print(self.mind_rects)
         backpack.render(self.screen, self.w_w, self.w_h)
         npc = []
         npc_xy = []
@@ -461,6 +475,12 @@ class RenderingOtherWindow:
                                              npc_rect[2] + 10, npc_rect[3] + 10))
         map_game.npc_xy = npc_xy
         map_game.npc_rects = npc_rects
+        draw_dialog = True
+        author_words_text = TextService.get_text_by_id(author_words_id[params[1].level_id])
+        draw_dialog_text = [ShowTextContent(author_words_text, (255, 255, 255),
+                                            16, (0, 0, 0),
+                                            (0, int(self.w_h // 1.3)),
+                                            (10, 10, 10, 10))]
         while running:
             pygame.mouse.set_visible(False)
             if not backpack.is_show:
@@ -477,10 +497,25 @@ class RenderingOtherWindow:
                         result_i = interactions.check_rect_in_zone(game_model_character.rect)
                         result_npc = map_game.collide_with_npc(game_model_character.rect)
                         if result_i[0]:
-                            # вот здесь мы начинаем диалог с нпс или комментарий ГГ
-                            pass
+                            get_dialog = self.mind_rects.get((result_i[2].x, result_i[2].y))
+                            draw_dialog_text.append(get_dialog)
+                            draw_dialog = True
                         if result_npc[0]:
-                            print('hui')
+                            npc_model = None
+                            for one_npc in npc:
+                                if (one_npc.x == (result_npc[1].x + 6) // map_game.tile_width and
+                                        one_npc.y == (result_npc[1].y + 6) // map_game.tile_height):
+                                    npc_model = one_npc
+                                    break
+                            if npc_model is not None:
+                                get_text = (TextService
+                                            .get_text_by_id(int(npc_model.character.inf['dialog_id'])))
+                                dialog_class = ShowTextContent(get_text, (255, 255, 255),
+                                                               16, (0, 0, 0),
+                                                               (0, int(self.w_h // 1.3)),
+                                                               (10, 10, 10, 10))
+                                draw_dialog_text.append(dialog_class)
+                                draw_dialog = True
                     if event.key == pygame.K_e:
                         # локальные переменные, проверяем находится ли игрок в какой-либо зоне
                         result_d = doors.check_rect_in_zone(game_model_character.rect)
@@ -570,6 +605,11 @@ class RenderingOtherWindow:
             game_class.screen.blit(game_model_character.image, (game_model_character.x, game_model_character.y))
             for one_npc in npc:
                 self.screen.blit(one_npc.image, (one_npc.x * map_game.tile_width, one_npc.y * map_game.tile_height))
+            if draw_dialog:
+                if not draw_dialog_text[-1].show_dialog_window(self.screen, map_game.tile_width, map_game.tile_height,
+                                                               10):
+                    draw_dialog = False
+                    map_game.render(game_class.screen, 0, 0, 70, 70)
             pygame.event.pump()
             pygame.display.flip()
             pygame.display.update()

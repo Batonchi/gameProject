@@ -63,10 +63,7 @@ class Character(pygame.sprite.Sprite):
         self.x = character.inf.get('x') or x
         self.image = pygame.transform.scale(self.image, (tile_width, tile_height))
         self.is_npc = self.character.inf.get('is_npc', True)
-        if self.is_npc:
-            self.dialog = character.inf.get('dialog')
-            self.dialog_link = self.dialog
-        else:
+        if not self.is_npc:
             self.emotional_health = self.character.get_info().get('emotional_health', 100)
             image2 = pygame.image.load(os.path.join('app/view/images/' + 'tile_0004(2).png'))
             image2 = pygame.transform.scale(image2, (tile_width, tile_height))
@@ -122,16 +119,6 @@ class Character(pygame.sprite.Sprite):
 
     def get_coors(self) -> tuple:
         return self.x, self.y
-
-    def say(self):
-        words = self.dialog_link['text']
-        self.dialog_link = self.dialog_link.get('next', None)
-        if self.dialog_link is None:
-            self.start_dialog()
-        return words
-
-    def start_dialog(self):
-        self.dialog_link = self.dialog
 
 
 class Item:
