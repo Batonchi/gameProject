@@ -1,7 +1,7 @@
 import json
 import sqlite3
 
-from app.sessions.model import GetSession, GetLevel, CreateLevel
+from app.sessions.model import GetSession, Level
 from database import Connection
 
 
@@ -29,10 +29,11 @@ class SessionService:
     @staticmethod
     def get_session_by_player_name(player_name: str) -> GetSession or None:
         with Connection() as conn:
-            result = conn.cursor().execute('''SELECT * FROM sessions WHERE player_name = ?''', (player_name,)).fetchone()
+            result = conn.cursor().execute('''SELECT * FROM sessions WHERE player_name = ?''',
+                                           (player_name,)).fetchone()
             if result is None:
                 return
-            return GetSession(result[0], result[1], result[2], result[3], result[4], result[5])
+            return GetSession(result[0], result[1], result[2], result[3], result[4])
 
     @staticmethod
     def update_inf(new_inf: dict, player_name: str):
@@ -63,7 +64,7 @@ class SessionService:
             try:
                 result = cur.execute('''SELECT * FROM sessions ORDER BY session_id ASC''').fetchone()
                 if result:
-                    return GetSession(result[0], result[1], result[2], result[3], result[4], result[5])
+                    return GetSession(result[0], result[1], result[2], result[3], result[4])
             except sqlite3.OperationalError as e:
                 print(e)
 
@@ -71,20 +72,23 @@ class SessionService:
 class LevelService:
 
     @staticmethod
-    def create(level: CreateLevel):
+    def create(level: Level):
         with Connection() as conn:
             cur = conn.cursor()
-            cur.execute('INSERT INTO levels player_start_x, player_start_y, level_map, places VALUES (?, ?, ?, ?)',
-                        (level.player_start_x, level.player_start_y, level.level_map, level.places))
+            cur.execute('INSERT INTO levels (level_id, player_start_x, player_start_y, level_map) '
+                        'VALUES (?, ?, ?, ?)',
+                        (level.level_id, level.player_start_x, level.player_start_y, level.level_map))
             conn.commit()
 
     @staticmethod
-    def get_level_by_id(level_id: str) -> GetLevel or None:
+    def get_level_by_id(level_id: str) -> Level or None:
         with Connection() as conn:
             cur = conn.cursor()
             result = cur.execute('SELECT * FROM levels WHERE level_id = ?', (level_id,)).fetchone()
             if result:
-                return GetLevel(result[0], result[1], result[2], result[3], result[4])
+                return Level(result[0], result[1], result[2], result[3], result[4])
 
 
-
+base_levels = [(0, 13, 38, 'map_level1'),
+               (1, 30, 35, 'map_level2'),
+               (2, 10, 53, 'map_level3')]

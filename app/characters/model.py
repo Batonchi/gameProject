@@ -2,7 +2,9 @@ import pygame
 import os
 import json
 
-from typing import Tuple
+from typing import Tuple, List
+
+from pygame.examples.moveit import GameObject
 from pygame_widgets.animations.animation import Recolour
 from pygame_widgets.button import Button
 
@@ -16,7 +18,7 @@ class CreateCharacter:
 
 class GetCharacter:
 
-    def __init__(self, character_id: int, character_name: str, info: str):
+    def __init__(self, character_id: int | None, character_name: str, info: str):
         self.character_id = character_id
         self.character_name = character_name
         self.inf = json.loads(info)
@@ -28,16 +30,37 @@ class GetCharacter:
         return self.inf
 
 
+class GetCharacters(GetCharacter):
+
+    def __init__(self, character_id: int, character_name: str, info: str):
+        super().__init__(character_id, character_name, info)
+
+    def get_characters_by_level_num(self, level_num: int) -> List[GetCharacter]:
+        characters = []
+        data = self.inf
+        for character_inf in data.get('by_coordinate_and_num_level_data', []):
+            if character_inf[0] == level_num:
+                new_inf = {
+                    'permissions': data.get('permissions', None),
+                    'is_npc': True,
+                    'dialog_id': character_inf[2].get('dialog_id', None),
+                    'image_name': character_inf[2].get('path_to_skin_image', None),
+                    'x': character_inf[1][0],
+                    'y': character_inf[1][1],
+                }
+                characters.append(GetCharacter(self.character_id, self.character_name, json.dumps(new_inf)))
+        return characters
+
+
 class Character(pygame.sprite.Sprite):
     def __init__(self, character: GetCharacter, tile_width: int = 8, tile_height: int = 8,
                  speed: Tuple[float, float] = (1, 1), y: int = 0, x: int = 0):
         super().__init__()
         self.character = character
-        images_path = {}
         self.image = pygame.image.load(os.path.
-                                       join(f'app/view/images/character.png'))
-        self.y = y
-        self.x = x
+                                       join(f'app/view/images/characters/{character.inf.get('image_name')}.png'))
+        self.y = character.inf.get('y') or y
+        self.x = character.inf.get('x') or x
         self.image = pygame.transform.scale(self.image, (tile_width, tile_height))
         self.is_npc = self.character.inf.get('is_npc', True)
         if self.is_npc:
@@ -70,30 +93,32 @@ class Character(pygame.sprite.Sprite):
         if self.permissions['may_have_backpack']:
             self.backpack = BackPack(character.inf.get('backpack_volume') or 10, self)
 
-    def check_rect_in_zone(self, player_rect: pygame.Rect, zone_rect: list):
+    @staticmethod
+    def check_rect_in_zone(player_rect: pygame.Rect, zone_rect: list):
         for rect in zone_rect:
             if player_rect.colliderect(rect):
-                return [True]
+                return [True, rect]
         return [False]
 
     def move(self, word: str):
-        if word == 'up':
-            self.y += self.speed[1]
-            self.rect.move_ip(0, self.speed[1])
-            self.index = 0
-        elif word == 'down':
-            self.y -= self.speed[1]
-            self.rect.move_ip(0, -self.speed[1])
-            self.index = 0
-        elif word == 'left':
-            self.x -= self.speed[0]
-            self.rect.move_ip(-self.speed[0], 0)
-            self.index = 2
-        elif word == 'right':
-            self.x += self.speed[0]
-            self.rect.move_ip(self.speed[0], 0)
-            self.index = 1
-        self.image = self.images[self.index]
+        if self.permissions['may_move']:
+            if word == 'up':
+                self.y += self.speed[1]
+                self.rect.move_ip(0, self.speed[1])
+                self.index = 0
+            elif word == 'down':
+                self.y -= self.speed[1]
+                self.rect.move_ip(0, -self.speed[1])
+                self.index = 0
+            elif word == 'left':
+                self.x -= self.speed[0]
+                self.rect.move_ip(-self.speed[0], 0)
+                self.index = 2
+            elif word == 'right':
+                self.x += self.speed[0]
+                self.rect.move_ip(self.speed[0], 0)
+                self.index = 1
+            self.image = self.images[self.index]
 
     def get_coors(self) -> tuple:
         return self.x, self.y
@@ -148,7 +173,6 @@ class BackPack:
         self.items.append((item.item_name, i))
         self.cells[i].font = pygame.font.SysFont('Arial-black', 15, bold=500)
 
-
     def get_last_free_cell(self) -> int | None:
         for cell in range(0, self.volume):
             if self.rest[cell] == 0:
@@ -170,10 +194,8 @@ class BackPack:
         for i in range(0, self.volume):
             self.cells.append(Button(screen, i * (self.width_cell + gap), w_height - self.height_cell, self.width_cell,
                                      self.height_cell, colour=(30, 30, 30), borderColour=(155, 155, 155), radius=10,
-                                     borderThickness=1, textColour=(255, 255, 255)))
-            if i == self.volume - 1:
-                self.cells[i].image = pygame.transform.scale(pygame.image.load(os.path.join('app/map/icons/' + 'cross.png')),
-                                                             (30, 30))
+                                     borderThickness=1, textColour=(255, 255, 255),
+                                     font=pygame.font.SysFont('arial-black', 15, 700)))
             if self.cells[-1].image is None:
                 self.cells[-1].setText('пусто')
         self.do_selected(self.active_cell_id)
@@ -199,7 +221,7 @@ class BackPack:
             self.active_cell_id = len(self.cells) - 1
 
     def remove_item(self, cell_i: int):
-        self.rest[cell_i] = None
+        self.rest[cell_i] = 0
         self.cells[cell_i].setText('пусто')
         self.cells[cell_i].image = None
         self.cells[cell_i].font_size = 20
