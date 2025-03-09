@@ -3,8 +3,6 @@ from typing import Tuple
 import pytmx.util_pygame
 import pygame
 import os
-from app.texts.model import ShowTextContent, GetText
-import app.characters.model
 
 
 class PlayerCamera:  # класс камеры игрока

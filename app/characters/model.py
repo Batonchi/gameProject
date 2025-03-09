@@ -9,6 +9,7 @@ from pygame_widgets.animations.animation import Recolour
 from pygame_widgets.button import Button
 
 
+# класс для пркоидки для создания таблицы
 class CreateCharacter:
 
     def __init__(self, character_name: str, info: dict):
@@ -17,6 +18,7 @@ class CreateCharacter:
         self.inf = json.dumps(info)
 
 
+# класс для пркоидки для получения данных из таблицы
 class GetCharacter:  # класс для получения имени героя и его информации
 
     def __init__(self, character_id: int | None, character_name: str, info: str):
@@ -31,6 +33,8 @@ class GetCharacter:  # класс для получения имени геро�
         return self.inf
 
 
+# класс снаследуемый от предидущего нужен для НПС которые по факту дублируються
+# просто в разном обличие с разными репликами
 class GetCharacters(GetCharacter):
 
     def __init__(self, character_id: int, character_name: str, info: str):
@@ -54,6 +58,7 @@ class GetCharacters(GetCharacter):
         return characters
 
 
+# игровая модель персонажа, для отображения
 class Character(pygame.sprite.Sprite):
     def __init__(self, character: GetCharacter, tile_width: int = 8, tile_height: int = 8,
                  speed: Tuple[float, float] = (1, 1), y: int = 0, x: int = 0):
@@ -76,7 +81,7 @@ class Character(pygame.sprite.Sprite):
             self.images = [self.image, image2, image3]
             self.speed = speed
         self.index = 0  # для анимации
-        self.tile_size = tile_width, tile_height # размер тайла
+        self.tile_size = tile_width, tile_height  # размер тайла
 
         self.rect = pygame.Rect([self.x, self.y, tile_width, tile_height])  # создаем прямоугольник героя и его зону
         self.zone_rect = pygame.Rect([self.x - 6, self.y - 6, tile_width + 10, tile_height + 10])
@@ -129,6 +134,7 @@ class Character(pygame.sprite.Sprite):
         return self.x, self.y
 
 
+# класс для хранения инфомации о предмете рюкзака
 class Item:
 
     def __init__(self, item_name: str, inf: dict, func, harmless: int = 10):
@@ -144,6 +150,7 @@ class Item:
         character.emotional_health += self.harmless
 
 
+# класс рюкзака
 class BackPack:
 
     def __init__(self, volume: int, character: Character):

@@ -6,12 +6,14 @@ import os
 from typing import Tuple, List
 
 
+# класс для работы с заполнением таблицы БД
 class CreateText:
 
     def __init__(self, content: dict):
         self.content = json.dumps(content)
 
 
+# класс для работы с получением из таблицы БД
 class GetText:
 
     def __init__(self, text_id: int, content: str):
@@ -19,13 +21,14 @@ class GetText:
         self.content = json.loads(content)
 
 
+# класс для работы в main файле с отображением текста
 class ShowTextContent:
 
     def __init__(self, text: GetText, color: Tuple[int, int, int], font_size: int,
                  background_color: Tuple[int, int, int] | Tuple[int, int, int, int],
                  xy_start: Tuple[int, int] | Tuple[float, int],
                  padding: Tuple[int, int, int, int],
-                 border_radius: int = 0, font_weight: int = 700,add_repeat: int = 0):
+                 border_radius: int = 0, font_weight: int = 700, add_repeat: int = 0):
         self.view_text_background = pytmx.TiledMap(os.path.abspath('app/map/for_dialog.tmx'))
         self.text = text
         self.dialog_link = text.content
@@ -51,16 +54,19 @@ class ShowTextContent:
         screen.blit(self.image, self.xy_start)
 
     def draw_rect_frame_in_full_line(self, screen: pygame.Surface, v_padding: int, x_end: int):
+        # рисуем с отсупом сплошную линию
         pygame.draw.rect(screen, self.background_color, pygame.rect.Rect(0, self.rect.y - v_padding // 2,
                                                                          x_end,
                                                                          self.rect.height + v_padding),
                          border_radius=5)
 
     def restart_dialog(self):
+        # перезапуск диаллога, пп для note
         self.dialog_link = self.text.content
         self.now_text = self.dialog_link.get('text', None)
 
     def show_dialog_window(self, screen: pygame.Surface, tile_width: int, tile_height: int, repeat_count: int):
+        # отображение диалоговых окон
         repeat = repeat_count
         image = pygame.image.load(os.path.abspath('app/map/white.png'))
         image = pygame.transform.scale(image, (tile_width, tile_height))
@@ -91,6 +97,7 @@ class ShowTextContent:
                         return False
         return True
 
+    # следующая реплика выдача
     def next_rep(self):
         words = self.dialog_link['text']
         self.dialog_link = self.dialog_link.get('next', None)

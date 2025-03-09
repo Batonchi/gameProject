@@ -1,6 +1,7 @@
 import sqlite3
 
 
+# контекстный менеджер для работы с подключением к БД
 class Connection:
 
     def __enter__(self):
@@ -11,6 +12,7 @@ class Connection:
         self.connection.close()
 
 
+# инициализация БД
 def create_database():
     with Connection() as conn:
         cur = conn.cursor()
@@ -40,6 +42,7 @@ def create_database():
         conn.commit()
 
 
+# восстановление БД
 def reset_bd():
     with Connection() as conn:
         cur = conn.cursor()

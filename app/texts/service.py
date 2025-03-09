@@ -4,6 +4,7 @@ from database import Connection
 from app.texts.model import GetText, CreateText
 
 
+# клаасс для работы с БД
 class TextService:
 
     @staticmethod

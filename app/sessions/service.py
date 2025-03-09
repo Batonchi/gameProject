@@ -5,6 +5,7 @@ from app.sessions.model import GetSession, Level
 from database import Connection
 
 
+# клаасс для работы с БД таблицей
 class SessionService:
     @staticmethod
     def get_name_player_and_date():
@@ -71,6 +72,7 @@ class SessionService:
                 print(e)
 
 
+# клаасс для работы с БД таблицей
 class LevelService:
 
     @staticmethod

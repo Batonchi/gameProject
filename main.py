@@ -46,9 +46,9 @@ class Cross:
                          'С крестом в кармане — куда угодно! Хоть в ад, хоть в рай!',
                          'Заблудился в жизни? Крестик в руках — компас не потеряешь!']  # фразы. Типо прикольно
 
-    def show_text(self, screen, alpha, text):  # показывает текст в верхем левом углу
-        font = pygame.font.SysFont('Arial', 20)
-        text_surface = font.render(text, True, (255, 0, 0))
+    def show_text(self, screen, alpha):  # показывает текст в верхем левом углу
+        font = pygame.font.SysFont('Arial-black', 20)
+        text_surface = font.render(random.choice(self.replicas), True, (255, 0, 0))
         text_surface.set_alpha(alpha)  # Устанавливаем уровень прозрачности
         screen.blit(text_surface, (0, 5))
 
@@ -527,8 +527,7 @@ class RenderingOtherWindow:
                     if event.key == pygame.K_u:
                         if backpack.active_cell_id == backpack.volume - 1:
                             map_game.render(self.screen, 0, 0, 30, 10)
-                            replica = random.choice(cross.replicas)
-                            cross.show_text(self.screen, 255, replica)
+                            cross.show_text(self.screen, 255)
                         else:
                             backpack_elem = backpack.rest[backpack.active_cell_id]
                             if backpack_elem is not None and backpack_elem.item_name == 'note':
@@ -721,6 +720,7 @@ class RenderingOtherWindow:
                                                                                           .get_last_session().
                                                                                           level_id), params[2]))
                 except Exception as e:
+                    print(e)
                     SessionService.update_level(0, params[0].player_name)
                     self.show_final_window()
             pygame.event.pump()
@@ -748,7 +748,7 @@ class RenderingOtherWindow:
             pygame.mixer.music.play(-1, 0.0)
         if game_session is not None:
             (self.types_of_window['main_menu']
-            ['buttons_column_groups'][1]['buttons'][1]) = ('continue_game_session-btn', True)
+             ['buttons_column_groups'][1]['buttons'][1]) = ('continue_game_session-btn', True)
             self.render('main_menu', param={'player_name': game_session.player_name,
                                             'title': 'Absolutely Depressive Live'})
         self.render(type_window='main_menu', param={'title': 'Absolutely Depressive Live'})
@@ -768,8 +768,10 @@ class RenderingOtherWindow:
         map_game.render(self.screen, 0, 0, 70, 70)
 
 
+# класс для вызова нажатием на кнопку функций
 class OnClickFunctions:
 
+    # начать новую игру
     @staticmethod
     def new_game_session_init(player_name: str) -> Tuple[GetSession, Level, GetCharacter] or ErrorWidget:
         if not CharacterService.check_characters():
@@ -807,6 +809,7 @@ class OnClickFunctions:
         get_level = LevelService.get_level_by_id(level_id)
         return get_session, get_level, get_character
 
+    # продолжить игру
     @staticmethod
     def continue_game_session(player_name: str) -> Tuple[GetSession, Level, GetCharacter] or ErrorWidget:
         get_session = SessionService.get_session_by_player_name(player_name)

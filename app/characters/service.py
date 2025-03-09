@@ -4,6 +4,7 @@ from app.characters.model import CreateCharacter, GetCharacter, GetCharacters
 from database import Connection
 
 
+# клаасс для работы с БД
 class CharacterService:
 
     @staticmethod
@@ -68,11 +69,7 @@ npc_inform = [
                 'path_to_skin_image': '11'
             }],
             [1, [49, 22], {
-                'dialog_id': 4,
-                'path_to_skin_image': '11'
-            }],
-            [1, [25, 18], {
-                'dialog_id': 7,
+                'dialog_id': 5,
                 'path_to_skin_image': '11'
             }],
             [1, [14, 15], {
@@ -111,19 +108,19 @@ npc_inform = [
                 'path_to_skin_image': '3'
             }],
             [1, [42, 40], {
-                'dialog_id': 3,
+                'dialog_id': 4,
                 'path_to_skin_image': '4'
             }],
             [1, [43, 40], {
-                'dialog_id': 3,
+                'dialog_id': 4,
                 'path_to_skin_image': '5'
             }],
             [1, [40, 9], {
-                'dialog_id': 5,
+                'dialog_id': 7,
                 'path_to_skin_image': '10'
             }],
             [1, [41, 8], {
-                'dialog_id': 5,
+                'dialog_id': 7,
                 'path_to_skin_image': '7'
             }],
             [1, [39, 18], {
