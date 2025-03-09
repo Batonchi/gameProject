@@ -24,13 +24,15 @@ class PlayerCamera:
 
 class Map:
     def __init__(self, filename: str, tile_width: int = 8, tile_height: int = 8):
-        self.map = pytmx.TiledMap(os.path.abspath('app/map/' + filename))
+        self.map = pytmx.TiledMap(os.path.abspath('app/map/' + filename + '.tmx'))
         self.width = 100
         self.height = 100
         self.top = 0
         self.left = 0
         self.tile_width = tile_width
         self.tile_height = tile_height
+        self.npc_xy = []
+        self.npc_rects = []
         self.walls_layer = self.map.get_layer_by_name('walls')
 
         self.rects_doors = dict()
@@ -60,10 +62,15 @@ class Map:
             screen.blit(pygame.transform.scale(image, (self.tile_width, self.tile_height)),
                         (self.left + (x * self.tile_width), self.top + (y * self.tile_height)))
 
+    def delete_npc_by_i(self, i: int):
+        self.npc_xy.pop(i)
+
     def render(self, screen, x_i: int, y_i: int, width: int, height: int):
         count = 0
         for y in range(y_i, height):
             for x in range(x_i, width):
+                if (x, y) in self.npc_xy:
+                    continue
                 # получаем тайл на данных координатах, после отображаем его на экране
                 walls = self.map.get_tile_image(x, y, 1)
                 floor = self.map.get_tile_image(x, y, 0)
@@ -140,9 +147,17 @@ class Map:
 
     def collide_with_walls(self, player_rect):  # коллайд со стенами
         # Здесь, мы просто проверяем есть ли какие-либо пересечения со всеми стенами, если да - возвращаем True
-        if player_rect.collidelistall(self.walls):
+        if player_rect.collidelistall(self.walls) or player_rect.collidelistall(self.npc_rects):
             return True
         return False
+
+    def collide_with_npc(self, player_rect):  # коллайд со стенами
+        # Здесь, мы просто проверяем есть ли какие-либо пересечения со всеми стенами, если да - возвращаем True
+        for npc_rect in self.npc_rects:
+            if player_rect.colliderect(npc_rect):
+                return [True, npc_rect]
+        return [False]
+
 
 
 class Doors(pygame.sprite.Sprite):  # класс дверей. Здесь прописаны все или почти все функции для взаимодействия с ними
@@ -219,10 +234,11 @@ class Doors(pygame.sprite.Sprite):  # класс дверей. Здесь про
             return True
         return False
 
-    def removing_closed_door(self, door_zone, name_keys_taken: list, id_backpack: int):
+    def removing_closed_door(self, door_zone, name_keys_taken: list, cell_id: int):
+        returned_value = False
         name_key = None
         for el in name_keys_taken:
-            if id_backpack == el[1]:
+            if cell_id == el[1]:
                 name_key = el[0]
         # Этот метод нужен для того, чтобы удалять из списка обычных дверей
         # - открытые, следовательно, во время проверки столкновений с дверьми, открытые двери мы проверять не будем,
@@ -242,11 +258,14 @@ class Doors(pygame.sprite.Sprite):  # класс дверей. Здесь про
                                 self.open_doors.append([door, *self.pair_doors_rects[(str(door))]])
                                 # этот список используется в update
                                 self.rectangles_doors.remove(door)
+                                returned_value = True
                 else:
-                    # добавляем открытую дверь в список
+                    # добавляем
+                    # открытую дверь в список
                     self.open_doors.append([door, *self.pair_doors_rects[(str(door))]])
                     # этот список используется в update
                     self.rectangles_doors.remove(door)
+        return returned_value
 
     def update(self, screen):
         # отрисовываем все открытые двери

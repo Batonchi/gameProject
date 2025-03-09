@@ -1,22 +1,20 @@
 import json
 import os
-import time
 import random
 import pygame
 import pygame.camera
 import pygame_widgets
 
-from app.characters.service import CharacterService
-from app.sessions.model import GetSession, GetLevel
-from database import create_database
+from app.characters.service import CharacterService, npc_inform
+from database import create_database, reset_bd
 from typing import Tuple
 from pygame_widgets.textbox import TextBox
 from app.characters.model import Character, GetCharacter, CreateCharacter, BackPack, Item
 from app.map.model import Map, PlayerCamera, Doors, KeysDoors, Notes, Interactions
 from pygame_widgets.button import Button
-from app.sessions.service import SessionService, LevelService
+from app.sessions.service import SessionService, LevelService, GetSession, Level, base_levels
 from app.texts.model import ShowTextContent
-from app.texts.service import GetText, TextService, CreateText, all_dicts
+from app.texts.service import GetText, TextService, CreateText, all_dicts, mind_gg_id, author_words_id
 
 create_database()
 
@@ -59,7 +57,7 @@ class Game:
 
         if game_session is not None:
             (self.render_other_window_handler.types_of_window['main_menu']
-            ['buttons_column_groups'][1]['buttons'][1]) = ('continue_game_session-btn', True)
+             ['buttons_column_groups'][1]['buttons'][1]) = ('continue_game_session-btn', True)
             self.render_other_window_handler.render('main_menu',
                                                     param={'player_name': game_session.player_name,
                                                            'title': self.name})
@@ -103,10 +101,6 @@ class RenderingOtherWindow:
                 'text': 'выйти из игры',
                 'onclick': lambda: quit()
             },
-            'back-btn': {
-                'text': 'назад',
-                'onclick': ''
-            },
             'continue_game_session-btn': {
                 'text': 'продолжить игру',
                 'onclick': lambda: self.starting_game(2)
@@ -131,8 +125,9 @@ class RenderingOtherWindow:
                 'text': 'обучение',
                 'onclick': lambda: self.show_training_screen()
             },
-            'exit_note-btn': {
-                'onclick': ''
+            'reset_bd-btn': {
+                'text': 'сброс прогресса',
+                'onclick': lambda: self.reset_btn_func()
             }
         }
         self.base_window_arguments = {
@@ -140,7 +135,7 @@ class RenderingOtherWindow:
             'background-size': (self.w_w, self.w_h),
             'background-color': (0, 0, 0),
         }
-        # здесь надо будет написать какие окна тееб нада
+        # здесь надо будет написать какие окна тыеб нада
         # если что кнопки тоже можешь добавить
         self.types_of_window = {
             'main_menu': {
@@ -164,7 +159,8 @@ class RenderingOtherWindow:
                             2: ('new_game_session-btn',),
                             3: ('train-btn',),
                             4: ('about-btn',),
-                            5: ('exit-btn',),
+                            5: ('reset_bd-btn',),
+                            6: ('exit-btn',)
                         }
                     }
                 }
@@ -211,10 +207,29 @@ class RenderingOtherWindow:
                         }
                     }
                 }
+            },
+            'final_window': {
+                'caption': 'The end',
+                'buttons_column_groups': {
+                    1: {
+                        'xy_start': (self.w_w // 3, self.w_h // 1.2),
+                        'width_height': (self.w_w // 3, self.w_h // 12),
+                        'gap': 10,
+                        'buttons': {
+                            1: ('exit_to_menu-btn',)
+                        }
+                    }
+                }
             }
         }
 
         self.particles = Particles(screen, width=w_w, height=w_h)
+
+    def reset_btn_func(self):
+        reset_bd()
+        cell = self.types_of_window['main_menu']['buttons_column_groups'][1]['buttons'][1]
+        self.types_of_window['main_menu']['buttons_column_groups'][1]['buttons'][1] = (cell[0], False)
+        self.return_to_menu()
 
     def show_training_screen(self):
         self.render('training_menu')
@@ -384,7 +399,7 @@ class RenderingOtherWindow:
                        borderThickness=self.base_text_box_arguments['borderThickness'],
                        font=pygame.font.SysFont('Arial-black', self.base_text_box_arguments['fontSize'], 700))
 
-    def render_level_map_with_param(self, game_class: Game, params: Tuple[GetSession, GetLevel, GetCharacter]):
+    def render_level_map_with_param(self, game_class: Game, params: Tuple[GetSession, Level, GetCharacter]):
         pygame.mixer.music.load(os.path.abspath(os.path.join('app\\music', 'melody_4.mp3')))
         pygame.mixer.music.play(-1, 0.0)
         for button in self.all_buttons:
@@ -430,10 +445,22 @@ class RenderingOtherWindow:
                                     tile_width=self.player_w_and_h[last_name_sim][0],
                                     tile_height=self.player_w_and_h[last_name_sim][1])
         backpack.render(self.screen, self.w_w, self.w_h)
-        text = ShowTextContent(GetText(0, json.dumps({'text': 'hfbk,bdfk,bkbnddkbdfdkjb'})),
-                               (0, 0, 0), 20,
-                               (200, 200, 200), (self.w_w // 4.9, self.w_h // 6),
-                               padding=(10, 10, 10, 10), border_radius=10)
+        npc = []
+        npc_xy = []
+        npc_rects = []
+        characters = CharacterService.get_all_npc_characters()
+        for data_character in characters:
+            npc_on_map = data_character.get_characters_by_level_num(params[1].level_id + 1)
+            for one_npc in npc_on_map:
+                npc.append(Character(one_npc, tile_width=self.player_w_and_h[last_name_sim][0],
+                                     tile_height=self.player_w_and_h[last_name_sim][1], speed=(0, 0)))
+                npc_xy.append((npc[-1].x, npc[-1].y))
+                npc_rect = npc[-1].rect
+                npc_rects.append(pygame.Rect(npc_rect[0] * map_game.tile_width - 6,
+                                             npc_rect[1] * map_game.tile_height - 6,
+                                             npc_rect[2] + 10, npc_rect[3] + 10))
+        map_game.npc_xy = npc_xy
+        map_game.npc_rects = npc_rects
         while running:
             pygame.mouse.set_visible(False)
             if not backpack.is_show:
@@ -446,13 +473,22 @@ class RenderingOtherWindow:
                 if event.type == pygame.KEYUP:
                     game_model_character.image = game_model_character.images[0]
                 if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_f:
+                        result_i = interactions.check_rect_in_zone(game_model_character.rect)
+                        result_npc = map_game.collide_with_npc(game_model_character.rect)
+                        if result_i[0]:
+                            # вот здесь мы начинаем диалог с нпс или комментарий ГГ
+                            pass
+                        if result_npc[0]:
+                            print('hui')
                     if event.key == pygame.K_e:
                         # локальные переменные, проверяем находится ли игрок в какой-либо зоне
                         result_d = doors.check_rect_in_zone(game_model_character.rect)
                         result_k = keys_doors.check_rect_in_zone(game_model_character.rect)
                         result_n = notes.check_rect_in_zone(game_model_character.rect)
                         if result_d[0]:
-                            doors.removing_closed_door(result_d[1], backpack.items, backpack.active_cell_id)
+                            if doors.removing_closed_door(result_d[1], backpack.items, backpack.active_cell_id):
+                                backpack.remove_item(backpack.active_cell_id)
                             # если True, удаляем дверь
                         if result_k[0]:
                             if keys_doors.add_taken_key(result_k[1]) and result_k[1] not in keys_doors.keys_taken:
@@ -480,15 +516,7 @@ class RenderingOtherWindow:
                     if event.key == pygame.K_ESCAPE:  # Для меню паузы
                         backpack.close_backpack()
                         game_class.render_other_window_handler.render('pause_game')
-                if event.type == pygame.K_f:
-                    result_i = interactions.check_rect_in_zone(game_model_character.rect)
-                    # result_npc = game_model_character.check_rect_in_zone(game_model_character.rect, npc_level)
-                    if result_i[0]:
-                        # вот здесь мы начинаем диалог с нпс или комментарий ГГ
-                        pass
-                    # if result_npc[0]:
-                    #     pass
-            #
+
             result_i = interactions.check_rect_in_zone(game_model_character.rect)  # если игрок заходит в зону "события"
             # Добавляем это событие/взаимодействие в список активных. После обновляем
             if result_i[0]:
@@ -532,16 +560,16 @@ class RenderingOtherWindow:
 
             # различные апдейты, по названию все понятно
             camera.update()
-
             map_game.update(game_class.screen, camera)
             doors.update(self.screen)
             keys_doors.update(self.screen)
             notes.update(self.screen)
             interactions.update(self.screen)
-
             # notes.update(self.screen)
             pygame_widgets.update(events)
             game_class.screen.blit(game_model_character.image, (game_model_character.x, game_model_character.y))
+            for one_npc in npc:
+                self.screen.blit(one_npc.image, (one_npc.x * map_game.tile_width, one_npc.y * map_game.tile_height))
             pygame.event.pump()
             pygame.display.flip()
             pygame.display.update()
@@ -565,10 +593,9 @@ class RenderingOtherWindow:
         if pygame.mixer.music.get_busy() and from_pause:
             pygame.mixer.music.load(os.path.abspath(os.path.join('app\\music', 'melody_3.mp3')))
             pygame.mixer.music.play(-1, 0.0)
-        print(pygame.display.get_caption())
         if game_session is not None:
             (self.types_of_window['main_menu']
-            ['buttons_column_groups'][1]['buttons'][1]) = ('continue_game_session-btn', True)
+             ['buttons_column_groups'][1]['buttons'][1]) = ('continue_game_session-btn', True)
             self.render('main_menu', param={'player_name': game_session.player_name,
                                             'title': 'Absolutely Depressive Live'})
         self.render(type_window='main_menu', param={'title': 'Absolutely Depressive Live'})
@@ -591,11 +618,22 @@ class RenderingOtherWindow:
 class OnClickFunctions:
 
     @staticmethod
-    def new_game_session_init(player_name: str) -> Tuple[GetSession, GetLevel, GetCharacter] or ErrorWidget:
+    def new_game_session_init(player_name: str) -> Tuple[GetSession, Level, GetCharacter] or ErrorWidget:
+        if not CharacterService.check_characters():
+            for level_inf in base_levels:
+                LevelService.create(Level(level_inf[0], level_inf[1], level_inf[2], level_inf[3]))
+            for npc in npc_inform:
+                CharacterService.create(CreateCharacter(npc[0], npc[1]))
+            for el in all_dicts:
+                TextService.save(CreateText(el[0]), el[1])
+            with open('notes_text.txt', 'r', encoding='utf-8') as f:
+                for text in f.readlines():
+                    TextService.save(CreateText({'text': text, 'next': None}), TextService.get_last_id() + 1)
         create_session = SessionService.create(player_name)
         if create_session is not None:
             return ErrorWidget(create_session[1], 1000, 100, (0, 0))
         CharacterService.create(CreateCharacter(character_name=player_name, info={
+            'image_name': 'character',
             'emotional_health': 100,
             'is_npc': False,
             'permissions': {
@@ -606,6 +644,7 @@ class OnClickFunctions:
                 'may_heal': True,
                 'may_see': True
             }
+
         }))
         get_character = CharacterService.get_character_by_name(player_name)
         get_session = SessionService.get_session_by_player_name(player_name)
@@ -614,7 +653,7 @@ class OnClickFunctions:
         return get_session, get_level, get_character
 
     @staticmethod
-    def continue_game_session(player_name: str) -> Tuple[GetSession, GetLevel, GetCharacter] or ErrorWidget:
+    def continue_game_session(player_name: str) -> Tuple[GetSession, Level, GetCharacter] or ErrorWidget:
         get_session = SessionService.get_session_by_player_name(player_name)
         if get_session is None:
             return ErrorWidget(get_session[1], 1000, 100, (0, 0))
@@ -661,10 +700,4 @@ class Particles:  # класс частиц
 
 
 if __name__ == '__main__':
-    # for el in all_dicts:
-    #     TextService.save(CreateText(el))
-    # with open('notes_text.txt', 'r', encoding='utf-8') as f:
-    #     for text in f.readlines():
-    #         TextService.save(CreateText({'text': text, 'next': None}))
-
     game = Game('Absolutely Depressive Live')
