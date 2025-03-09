@@ -58,7 +58,7 @@ class Character(pygame.sprite.Sprite):
         super().__init__()
         self.character = character
         self.image = pygame.image.load(os.path.
-                                       join(f'app/view/images/characters/{character.inf.get('image_name')}.png'))
+                                       join(f'app/view/images/characters/{character.inf.get("image_name")}.png'))
         self.y = character.inf.get('y') or y
         self.x = character.inf.get('x') or x
         self.image = pygame.transform.scale(self.image, (tile_width, tile_height))
@@ -196,6 +196,10 @@ class BackPack:
                                      self.height_cell, colour=(30, 30, 30), borderColour=(155, 155, 155), radius=10,
                                      borderThickness=1, textColour=(255, 255, 255),
                                      font=pygame.font.SysFont('arial-black', 15, 700)))
+            if i == self.volume - 1:
+                self.cells[i].image = pygame.transform.scale(
+                    pygame.image.load(os.path.join('app/map/icons/' + 'cross.png')),
+                    (30, 30))
             if self.cells[-1].image is None:
                 self.cells[-1].setText('пусто')
         self.do_selected(self.active_cell_id)
