@@ -5,7 +5,7 @@ import json
 from typing import Tuple, List
 
 from pygame.examples.moveit import GameObject
-from pygame_widgets.animations.animation import Recolour
+from pygame_widgets.animations import Recolour
 from pygame_widgets.button import Button
 
 
